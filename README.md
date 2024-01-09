@@ -1,4 +1,1 @@
-Проект: Telegram-бот с функцией календаря
-Мусаэлян Карлен
-KarlosGsalva
-karlenmusaelian@gmail.com
+# Python_TelegremBot_Musaelian
