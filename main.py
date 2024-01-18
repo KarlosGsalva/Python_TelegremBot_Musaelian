@@ -15,22 +15,17 @@ class TicTacToe:
         player = self.change_player()
         player_step = self.player1_steps if player == self.player1 else self.player2_steps
         if not player_step:
-            print(f"Привет, Игрок {player}, пожалуйста посмотрите на доску и "
-                  f"выберите координаты на которые Вы хотели бы поставить {player},\n"
-                  f"при этом координаты должны быть в диапазоне от 0 до 2 включительно\n")
+            print(self._first_step_warning(player))
         else:
-            print(f"\nЧто ж, Игрок {player}, давай продолжим "
-                  f"выбери координаты на которые ты хотел бы поставить {player},\n"
-                  f"при этом координаты должны быть в диапазоне от 0 до 2 включительно\n")
+            print(self._second_step_warning(player))
         self.draw_board()
         x, y = int(input('Координата х: ')), int(input('Координата y: '))
 
         while not (0 <= x < 3 and 0 <= y < 3 and self.board[x][y] != 'X' and self.board[x][y] != 'O'):
-            print(f"\nВы ввели некоректное число, напомним, координаты должны быть "
-                  f"в диапазоне от 0 до 2 включительно также следует учесть, чтобы поле\n"
-                  f"не было занято Вами или соперником ;)")
+            print(self._mistake_input())
             x, y = int(input('Координата х: ')), int(input('Координата y: '))
             continue
+
         print(f"Отлично, теперь ход пеерходит к сопернику\n")
         return self.make_move(player, x, y)
 
@@ -43,8 +38,21 @@ class TicTacToe:
                 self.player2_steps += 1
         self.ask_move()
 
-    def check_win(self, player: str, board: list[list]):
-        pass
+    @staticmethod
+    def check_win(player: str, board: list[list]):
+        for i in range(3):
+            if board[i] == [player, player, player]:
+                return True
+
+            if board[0][i] == player and board[1][i] == player and board[2][i] == player:
+                return True
+
+        if board[0][0] == player and board[1][1] == player and board[2][2] == player:
+            return True
+
+        if board[0][2] == player and board[1][1] == player and board[2][0] == player:
+            return True
+        return False
 
     def draw_board(self) -> None:
         for x_coord in range(len(self.board)):
@@ -58,6 +66,27 @@ class TicTacToe:
             print()
             if x_coord < 2:
                 print("-" * 16)
+
+    @staticmethod
+    def _first_step_warning(player):
+        text = f"Привет, Игрок {player}, пожалуйста посмотрите на доску и "
+        f"выберите координаты на которые Вы хотели бы поставить {player},\n"
+        f"при этом координаты должны быть в диапазоне от 0 до 2 включительно\n"
+        return text
+
+    @staticmethod
+    def _second_step_warning(player):
+        text = f"\nЧто ж, Игрок {player}, давай продолжим "
+        f"выбери координаты на которые ты хотел бы поставить {player},\n"
+        f"при этом координаты должны быть в диапазоне от 0 до 2 включительно\n"
+        return text
+
+    @staticmethod
+    def _mistake_input():
+        text = f"\nВы ввели некоректное число, напомним, координаты должны быть "
+        f"в диапазоне от 0 до 2 включительно также следует учесть, чтобы поле\n"
+        f"не было занято Вами или соперником ;)"
+        return text
 
     def change_player(self):
         return next(self.player_turn)
