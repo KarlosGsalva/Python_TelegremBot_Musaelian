@@ -14,15 +14,17 @@ class TicTacToe:
     def ask_move(self):
         player = self.change_player()
         player_step = self.player1_steps if player == self.player1 else self.player2_steps
+
         if not player_step:
             print(self._first_step_warning(player))
         else:
-            print(self._second_step_warning(player))
+            print(self._non_first_step_warning(player))
+
         self.draw_board()
         x, y = int(input('Координата х: ')), int(input('Координата y: '))
 
         while not (0 <= x < 3 and 0 <= y < 3 and self.board[x][y] != 'X' and self.board[x][y] != 'O'):
-            print(self._mistake_input())
+            print(self._mistake_input_warning())
             x, y = int(input('Координата х: ')), int(input('Координата y: '))
             continue
 
@@ -52,6 +54,7 @@ class TicTacToe:
 
         if board[0][2] == player and board[1][1] == player and board[2][0] == player:
             return True
+
         return False
 
     def draw_board(self) -> None:
@@ -75,14 +78,14 @@ class TicTacToe:
         return text
 
     @staticmethod
-    def _second_step_warning(player):
+    def _non_first_step_warning(player):
         text = f"\nЧто ж, Игрок {player}, давай продолжим "
         f"выбери координаты на которые ты хотел бы поставить {player},\n"
         f"при этом координаты должны быть в диапазоне от 0 до 2 включительно\n"
         return text
 
     @staticmethod
-    def _mistake_input():
+    def _mistake_input_warning():
         text = f"\nВы ввели некоректное число, напомним, координаты должны быть "
         f"в диапазоне от 0 до 2 включительно также следует учесть, чтобы поле\n"
         f"не было занято Вами или соперником ;)"
