@@ -27,13 +27,17 @@ class TicTacToe:
             print(self._mistake_input_warning())
             x, y = int(input('Координата х: ')), int(input('Координата y: '))
 
-        print(f"\nОтлично, теперь ход переходит к сопернику\n")
         self._make_move(player, x, y)
 
         if self._check_win(player, self.board):
+            print()
             self._draw_board()
             print(self._winner_warning(player))
+            if self._ask_restart():
+                return TicTacToe().ask_move()
+            print("\nОк, тогда до встречи, надеюсь, увидимся снова ;)")
             return
+        print(f"\nОтлично, теперь ход переходит к сопернику\n")
         return self.ask_move()
 
     def _make_move(self, player: str, x: int, y: int):
@@ -110,6 +114,14 @@ class TicTacToe:
     def _winner_warning(player):
         text = f"\nИтак у нас появился победитель, Игрок {player}, поздравляем ;) !"
         return text
+
+    @staticmethod
+    def _ask_restart():
+        restart = input("\nХотите сыграть еще раз? Нажмите (y/n) или (1/0),\n"
+                        "где 'y' или '1' это согласие на начало новой игры: ")
+        if restart.lower() in ('y', '1'):
+            return True
+        return False
 
     def change_player(self):
         return next(self.player_turn)
