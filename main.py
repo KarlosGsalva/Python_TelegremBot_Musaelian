@@ -12,7 +12,7 @@ class TicTacToe:
         self.max_value_width = max(map(len, self.board))
 
     def ask_move(self):
-        current_player = self.change_player()
+        current_player = next(self.current_player)
         player_step = self.player1_steps if current_player == self.player1 else self.player2_steps
 
         if not player_step:
@@ -118,9 +118,6 @@ class TicTacToe:
         restart = input("\nХотите сыграть еще раз? Нажмите (y/n) или (1/0),\n"
                         "где 'y' или '1' это согласие на начало новой игры: ")
         return restart.lower() in ('y', '1')
-
-    def change_player(self):
-        return next(self.current_player)
 
 
 try:
