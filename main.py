@@ -7,18 +7,18 @@ class TicTacToe:
         self.player1_steps = False
         self.player2 = player2
         self.player2_steps = False
-        self.player_turn = cycle((self.player1, self.player2))
+        self.current_player = cycle((self.player1, self.player2))
         self.board = [[''] * 3 for _ in range(3)]
         self.max_value_width = max(map(len, self.board))
 
     def ask_move(self):
-        player = self.change_player()
-        player_step = self.player1_steps if player == self.player1 else self.player2_steps
+        current_player = self.change_player()
+        player_step = self.player1_steps if current_player == self.player1 else self.player2_steps
 
         if not player_step:
-            print(self._first_step_warning(player))
+            print(self._first_step_warning(current_player))
         else:
-            print(self._non_first_step_warning(player))
+            print(self._non_first_step_warning(current_player))
 
         self._draw_board()
         x, y = int(input('Координата х: ')), int(input('Координата y: '))
@@ -27,12 +27,12 @@ class TicTacToe:
             print(self._mistake_input_warning())
             x, y = int(input('Координата х: ')), int(input('Координата y: '))
 
-        self._make_move(player, x, y)
+        self._make_move(current_player, x, y)
 
-        if self._check_win(player, self.board):
+        if self._check_win(current_player, self.board):
             print()
             self._draw_board()
-            print(self._winner_warning(player))
+            print(self._winner_warning(current_player))
             if self._ask_restart():
                 return TicTacToe().ask_move()
             print("\nОк, тогда до встречи, надеюсь, увидимся снова ;)")
@@ -117,12 +117,10 @@ class TicTacToe:
     def _ask_restart():
         restart = input("\nХотите сыграть еще раз? Нажмите (y/n) или (1/0),\n"
                         "где 'y' или '1' это согласие на начало новой игры: ")
-        if restart.lower() in ('y', '1'):
-            return True
-        return False
+        return restart.lower() in ('y', '1')
 
     def change_player(self):
-        return next(self.player_turn)
+        return next(self.current_player)
 
 
 try:
