@@ -84,9 +84,7 @@ class TicTacToe:
 
     @staticmethod
     def _check_right_coord(x, y, board) -> bool:
-        if not (0 <= x < 3 and 0 <= y < 3 and board[x][y] != 'X' and board[x][y] != 'O'):
-            return False
-        return True
+        return 0 <= x < 3 and 0 <= y < 3 and board[x][y] not in ('X', 'O')
 
     @staticmethod
     def _first_step_warning(player):
