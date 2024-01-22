@@ -44,7 +44,7 @@ class TicTacToe:
             print(self._hope_declare())
             return
 
-        # Проверяем победителя, объявляем
+        # Проверяем победителя, объявляем,
         # запрашиваем новую партию или прощаемся
         else:
             if self._check_win(current_player, self.board):
@@ -102,17 +102,19 @@ class TicTacToe:
                 print("-" * 16)
 
     def _print_welcome_message(self, current_player) -> None:
-        if not (self.player1_turn or self.player2_turn):
+        if not (self.player1_turn and self.player2_turn):
             print(self._first_step_warning(current_player))
         else:
             print(self._non_first_step_warning(current_player))
 
     def _get_coordinates(self) -> tuple[int, int]:
         try:
-            x_coord, y_coord = map(int, input('Введите "х" и "y" координаты через пробел: ').split())
+            xy_coord = input('\nВведите "х" и "y" координаты двузначным числом,\n'
+                             'где первое число это координата x, второе координата y: ')
+            x_coord, y_coord = int(xy_coord) // 10, int(xy_coord) % 10
             if self._check_right_coord(x_coord, y_coord):
                 return x_coord, y_coord
-        except Exception as e:
+        except Exception:
             print(self._mistake_input_warning())
             return self._get_coordinates()
 
@@ -125,7 +127,7 @@ class TicTacToe:
     def _first_step_warning(player):
         text = (f"Привет, Игрок {player}, пожалуйста посмотрите на доску и выберите координаты на "
                 f"которые Вы хотели бы поставить {player},\nпри этом координаты должны быть в "
-                f"диапазоне от 0 до 2 включительно:")
+                f"диапазоне от 0 до 2 включительно:\n")
         return text
 
     @staticmethod
@@ -156,7 +158,7 @@ class TicTacToe:
 
     @staticmethod
     def _draw_declare():
-        return "Уважаемые игроки, у вас ничья ;)"
+        return "\nУважаемые игроки, у вас ничья ;)"
 
     @staticmethod
     def _opponent_step_warning():
