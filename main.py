@@ -4,49 +4,68 @@ from itertools import cycle
 class TicTacToe:
     def __init__(self, player1='X', player2='O'):
         self.player1 = player1
-        self.player1_steps = False
+        self.player1_turn = False
         self.player2 = player2
-        self.player2_steps = False
+        self.player2_turn = False
+        self.steps_taken_number = 0
         self.current_player = cycle((self.player1, self.player2))
         self.board = [[''] * 3 for _ in range(3)]
         self.max_value_width = max(map(len, self.board))
 
     def ask_move(self):
+        # Переключаем игрока
         current_player = next(self.current_player)
-        player_step = self.player1_steps if current_player == self.player1 else self.player2_steps
 
-        if not player_step:
-            print(self._first_step_warning(current_player))
-        else:
-            print(self._non_first_step_warning(current_player))
+        # Пишем тип сообщения в зависимости от того,
+        # первый это шаг игрока или нет
+        self._print_welcome_message(current_player)
 
+        # Рисуем поле с координатами для наглядности
         self._draw_board()
-        x, y = int(input('Координата х: ')), int(input('Координата y: '))
 
-        while not self._check_right_coord(x, y, self.board):
-            print(self._mistake_input_warning())
-            x, y = int(input('Координата х: ')), int(input('Координата y: '))
+        # Запрашиваем и проверяем координаты хода
+        x, y = self._get_coordinates()
 
+        # Делаем ход
         self._make_move(current_player, x, y)
 
-        if self._check_win(current_player, self.board):
-            print()
-            self._draw_board()
-            print(self._winner_warning(current_player))
+        # Если игроки сделали меньше 5 ходов нет смысла
+        # проверять победителя, запрашиваем следующий ход
+        if self.steps_taken_number < 5:
+            print(self._opponent_step_warning())
+            return self.ask_move()
+
+        # 9 шагов поле заполнено, победитель не выявлен
+        # объявляем ничью, запрашиваем новую партию или прощаемся
+        elif self.steps_taken_number == 9:
+            print(self._draw_declare())
             if self._ask_restart():
                 return TicTacToe().ask_move()
-            print("\nОк, тогда до встречи, надеюсь, увидимся снова ;)")
+            print(self._hope_declare())
             return
-        print(f"\nОтлично, теперь ход переходит к сопернику\n")
-        return self.ask_move()
 
-    def _make_move(self, player: str, x: int, y: int):
+        # Проверяем победителя, объявляем
+        # запрашиваем новую партию или прощаемся
+        else:
+            if self._check_win(current_player, self.board):
+                print()
+                self._draw_board()
+                print(self._winner_warning(current_player))
+                if self._ask_restart():
+                    return TicTacToe().ask_move()
+                print(self._hope_declare())
+                return
+            print(self._opponent_step_warning())
+            return self.ask_move()
+
+    def _make_move(self, player: str, x: int, y: int) -> None:
         self.board[x][y] = player
         match player:
             case self.player1:
-                self.player1_steps = True
+                self.player1_turn = True
             case self.player2:
-                self.player2_steps = True
+                self.player2_turn = True
+        self.steps_taken_number += 1
 
     @staticmethod
     def _check_win(player: str, board: list[list]):
@@ -82,9 +101,31 @@ class TicTacToe:
             if x_coord < 2:
                 print("-" * 16)
 
-    @staticmethod
-    def _check_right_coord(x, y, board) -> bool:
-        return 0 <= x < 3 and 0 <= y < 3 and board[x][y] not in ('X', 'O')
+    def send_welcome_message(self) -> None:
+        if self.current_player == self.player1:
+            self._print_welcome_message()
+        elif self.current_player == self.player2:
+            self._print_welcome_message()
+
+    def _print_welcome_message(self, current_player) -> None:
+        if not (self.player1_turn or self.player2_turn):
+            print(self._first_step_warning(current_player))
+        else:
+            print(self._non_first_step_warning(current_player))
+
+    def _get_coordinates(self) -> tuple[int, int]:
+        try:
+            x_coord, y_coord = map(int, input('Введите "х" и "y" координаты через пробел: ').split())
+            if self._check_right_coord(x_coord, y_coord):
+                return x_coord, y_coord
+        except Exception as e:
+            print(self._mistake_input_warning())
+            return self._get_coordinates()
+
+    def _check_right_coord(self, x, y) -> bool:
+        if x == '' or y == '':
+            return False
+        return 0 <= x < 3 and 0 <= y < 3 and self.board[x][y] not in ('X', 'O')
 
     @staticmethod
     def _first_step_warning(player):
@@ -118,6 +159,18 @@ class TicTacToe:
         restart = input("\nХотите сыграть еще раз? Нажмите (y/n) или (1/0),\n"
                         "где 'y' или '1' это согласие на начало новой игры: ")
         return restart.lower() in ('y', '1')
+
+    @staticmethod
+    def _draw_declare():
+        return "Уважаемые игроки, у вас ничья ;)"
+
+    @staticmethod
+    def _opponent_step_warning():
+        return "\nОтлично, теперь ход переходит к сопернику\n"
+
+    @staticmethod
+    def _hope_declare():
+        return "\nОк, тогда до встречи, надеюсь, увидимся снова ;)"
 
 
 try:
