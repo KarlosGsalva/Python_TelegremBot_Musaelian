@@ -101,12 +101,6 @@ class TicTacToe:
             if x_coord < 2:
                 print("-" * 16)
 
-    def send_welcome_message(self) -> None:
-        if self.current_player == self.player1:
-            self._print_welcome_message()
-        elif self.current_player == self.player2:
-            self._print_welcome_message()
-
     def _print_welcome_message(self, current_player) -> None:
         if not (self.player1_turn or self.player2_turn):
             print(self._first_step_warning(current_player))
