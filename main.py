@@ -108,15 +108,15 @@ class TicTacToe:
             print(self._non_first_step_warning(current_player))
 
     def _get_coordinates(self) -> tuple[int, int]:
-        try:
+        while True:
             xy_coord = input('\nВведите "х" и "y" координаты двузначным числом,\n'
                              'где первое число это координата x, второе координата y: ')
             x_coord, y_coord = int(xy_coord) // 10, int(xy_coord) % 10
             if self._check_right_coord(x_coord, y_coord):
                 return x_coord, y_coord
-        except Exception:
-            print(self._mistake_input_warning())
-            return self._get_coordinates()
+            else:
+                print(self._mistake_input_warning())
+                continue
 
     def _check_right_coord(self, x, y) -> bool:
         if x == '' or y == '':
