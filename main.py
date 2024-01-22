@@ -116,7 +116,6 @@ class TicTacToe:
                 return x_coord, y_coord
             else:
                 print(self._mistake_input_warning())
-                continue
 
     def _check_right_coord(self, x, y) -> bool:
         if x == '' or y == '':
