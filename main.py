@@ -120,7 +120,11 @@ class TicTacToe:
     def _check_right_coord(self, x, y) -> bool:
         if x == '' or y == '':
             return False
-        return 0 <= x < 3 and 0 <= y < 3 and self.board[x][y] not in ('X', 'O')
+        if not (0 <= x < 3 and 0 <= y < 3):
+            return False
+        if self.board[x][y] in (self.player1, self.player2):
+            return False
+        return True
 
     @staticmethod
     def _first_step_warning(player):
