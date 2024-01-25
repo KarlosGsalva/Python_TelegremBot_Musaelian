@@ -5,3 +5,4 @@ venv/
 .idea/
 .vscode/
 /random_tasks.py
+/examples.py
