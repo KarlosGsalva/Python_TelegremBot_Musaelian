@@ -1,3 +1,4 @@
+from collections import defaultdict
 from os import path, listdir, remove
 from sys import stdin
 
@@ -88,10 +89,21 @@ class NotesApp:
                           "(_note.txt будет добавлено автоматически): ")
         return f"{note_name}_note.txt"
 
+    @staticmethod
+    def show_menu(choice: str) -> str:
+        menu_dict = {'1': 'Создать заметку',
+                     '2': 'Прочитать заметку',
+                     '3': 'Редактировать заметку',
+                     '4': 'Удалить заметку',
+                     '5': 'Выйти из меню'}
+        return menu_dict[choice]
 
-make_note = NotesApp()
-make_note.create_note()
-make_note.read_notes()
-make_note.edit_note()
-make_note.delete_note()
+    @staticmethod
+    def request_menu_dict():
+        pass
 
+
+def main() -> None:
+    notes_app = NotesApp()
+    while True:
+        pass
