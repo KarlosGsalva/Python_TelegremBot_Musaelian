@@ -124,8 +124,10 @@ def main() -> None:
                 break
             case _:
                 print("\nВы ввели некорректную команду, введите номер от 1 до 5:")
-                main()
 
 
-if __name__ == '__main__':
-    main()
+try:
+    if __name__ == '__main__':
+        main()
+except KeyboardInterrupt:
+    print("\n\nExiting... работа приложения прекращена командой консоли")
