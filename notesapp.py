@@ -106,7 +106,7 @@ def main() -> None:
             case '4':
                 notes_app.delete_note()
             case '5':
-                print("Ок, увидимся ;)")
+                print(notes_app.NOTIFICATIONS["bye"])
                 break
             case _:
                 print(notes_app.NOTIFICATIONS["incorrect_menu_point"])
