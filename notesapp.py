@@ -1,11 +1,15 @@
 from os import path, listdir, remove
 from sys import stdin
 
+from constant_texts import MENU_TEXT, NOTIFICATION_TEXTS
+
 
 class NotesApp:
     def __init__(self) -> None:
         self.note_name = None
         self.note_text = None
+        self.MENU_TEXT = MENU_TEXT
+        self.NOTIFICATIONS = NOTIFICATION_TEXTS
 
     def read_notes(self) -> None:
         self.show_existing_notes()
@@ -15,7 +19,7 @@ class NotesApp:
                 for line in note_file:
                     print(line.strip())
         else:
-            self.not_exist_file_warning()
+            self.NOTIFICATIONS["note_not_exist"]()
             self.read_notes()
 
     def edit_note(self) -> None:
@@ -24,32 +28,31 @@ class NotesApp:
             self.show_note_content(requested_note)
             self.create_note(requested_note)
         else:
-            self.not_exist_file_warning()
+            self.NOTIFICATIONS["note_not_exist"]()
             self.edit_note()
 
-    @staticmethod
-    def create_note(note_name=None) -> None:
+    def create_note(self, note_name=None) -> None:
         if note_name is None:
-            note_name = input("\nВведите название заметки: ") + '_note.txt'
+            note_name = input(self.NOTIFICATIONS["new_note_name"]) + "_note.txt"
 
         with open(f"{note_name}", "w", encoding="utf-8") as note_file:
-            print("\nВведите текст заметки, чтобы прервать ввод введите пустую строку:")
+            print(self.NOTIFICATIONS["request_note_text"])
             line = stdin.readline()
 
             while line != '\n':
                 note_file.write(line)
                 line = stdin.readline()
 
-            print("Ввод завершен\n")
+            print(self.NOTIFICATIONS["enter_finished"])
         print(f"Заметка {note_name} создана")
 
     def delete_note(self) -> None:
         requested_note = self.request_note_name_for_delete()
         if path.isfile(requested_note):
-            remove(f"{requested_note}")
-            print(f"Заметка {requested_note} удалена")
+            remove(requested_note)
+            print(f"\nЗаметка {requested_note} удалена")
         else:
-            self.not_exist_file_warning()
+            print(self.NOTIFICATIONS["note_not_exist"])
             self.delete_note()
 
     @staticmethod
@@ -58,51 +61,34 @@ class NotesApp:
             for line in note_file:
                 print(line.strip())
 
-    @staticmethod
-    def show_existing_notes() -> None:
-        print("\nВам сейчас доступны следующие заметки:\n")
+    def show_existing_notes(self) -> None:
+        print(self.NOTIFICATIONS["accessed_note"])
         folder_path = path.dirname(__file__)
         existing_notes_list = listdir(folder_path)
         for note in [file for file in existing_notes_list if file.endswith('note.txt')]:
             print(note)
 
-    @staticmethod
-    def not_exist_file_warning() -> None:
-        print("\nЗапрашиваемая заметка отсутствует или введено некорректное название\n")
-
-    @staticmethod
-    def request_note_name_for_read() -> str:
-        note_name = input("\nВведите название нужной для чтения заметки\n"
-                          "(_note.txt будет добавлено автоматически): ")
+    def request_note_name_for_read(self) -> str:
+        note_name = input(self.NOTIFICATIONS["request_note_read"])
         return f"{note_name}_note.txt"
 
-    @staticmethod
-    def request_note_name_for_edit() -> str:
-        note_name = input("\nВведите название нужной для перезаписи заметки\n"
-                          "(_note.txt будет добавлено автоматически): ")
+    def request_note_name_for_edit(self) -> str:
+        note_name = input(self.NOTIFICATIONS["request_note_edit"])
         return f"{note_name}_note.txt"
 
-    @staticmethod
-    def request_note_name_for_delete() -> str:
-        note_name = input("\nВведите название нужной для удаления заметки\n"
-                          "(_note.txt будет добавлено автоматически): ")
+    def request_note_name_for_delete(self) -> str:
+        note_name = input(self.NOTIFICATIONS["request_note_delete"])
         return f"{note_name}_note.txt"
 
-    @staticmethod
-    def show_menu() -> None:
-        menu_dict = {'1': 'Создать заметку',
-                     '2': 'Прочитать заметку',
-                     '3': 'Редактировать заметку',
-                     '4': 'Удалить заметку',
-                     '5': 'Выйти из меню'}
-        for menu_point, menu_text in menu_dict.items():
+    def show_menu(self) -> None:
+        for menu_point, menu_text in self.MENU_TEXT.items():
             print(f"{menu_point}: {menu_text}")
 
     def request_command(self):
-        print("\nПожалуйста, выберите пункт меню:\n")
+        print(self.NOTIFICATIONS["choice_menu_point"])
         self.show_menu()
 
-        user_choice = input("\nВведите номер команды от 1 до 5: ")
+        user_choice = input(self.NOTIFICATIONS["enter_menu_point"])
         return user_choice
 
 
@@ -123,7 +109,7 @@ def main() -> None:
                 print("Ок, увидимся ;)")
                 break
             case _:
-                print("\nВы ввели некорректную команду, введите номер от 1 до 5:")
+                print(notes_app.NOTIFICATIONS["incorrect_menu_point"])
 
 
 try:
