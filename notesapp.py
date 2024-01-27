@@ -19,7 +19,7 @@ class NotesApp:
                 for line in note_file:
                     print(line.strip())
         else:
-            self.NOTIFICATIONS["note_not_exist"]()
+            print(self.NOTIFICATIONS["note_not_exist"])
             self.read_notes()
 
     def edit_note(self) -> None:
@@ -28,7 +28,7 @@ class NotesApp:
             self.show_note_content(requested_note)
             self.create_note(requested_note)
         else:
-            self.NOTIFICATIONS["note_not_exist"]()
+            print(self.NOTIFICATIONS["note_not_exist"])
             self.edit_note()
 
     def create_note(self, note_name=None) -> None:
