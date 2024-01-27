@@ -84,7 +84,7 @@ class NotesApp:
         for menu_point, menu_text in self.MENU_TEXT.items():
             print(f"{menu_point}: {menu_text}")
 
-    def request_command(self):
+    def request_command(self) -> str:
         print(self.NOTIFICATIONS["choice_menu_point"])
         self.show_menu()
 
