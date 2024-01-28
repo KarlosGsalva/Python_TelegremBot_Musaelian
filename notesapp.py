@@ -8,8 +8,8 @@ class NotesApp:
     def __init__(self) -> None:
         self.note_name = None
         self.note_text = None
-        self.MENU_TEXT = MENU_TEXT
-        self.NOTIFICATIONS = NOTIFICATION_TEXTS
+        self.MENU_TEXT: dict = MENU_TEXT
+        self.NOTIFICATIONS: dict = NOTIFICATION_TEXTS
 
     def read_notes(self) -> None:
         self.display_notes()
@@ -66,15 +66,22 @@ class NotesApp:
         with open(f"{note_name}", "r", encoding="utf-8") as note_file:
             return note_file.read()
 
+    @staticmethod
+    def gather_all_notes() -> list:
+        return [file for file in listdir(path.dirname(__file__)) if file.endswith('note.txt')]
+
     def display_notes(self) -> None:
-        print(self.NOTIFICATIONS["accessed_note"])
-
-        folder_path = path.dirname(__file__)
-        all_notes: list = [file for file in listdir(folder_path) if file.endswith('note.txt')]
-        note_with_len: dict = {k: len(self.read_note_content(k)) for k in all_notes}
-
-        for note in sorted(note_with_len.items(), key=lambda x: x[1]):
+        print(self.NOTIFICATIONS["accessed_notes"])
+        for note in sorted(self.make_dict_for_sort().items(), key=lambda x: x[1]):
             print(note[0])
+
+    def display_sorted_notes(self) -> None:
+        print(self.NOTIFICATIONS["sorted_notes"])
+        for note in sorted(self.make_dict_for_sort().items(), key=lambda x: x[1], reverse=True):
+            print(note[0])
+
+    def make_dict_for_sort(self) -> dict:
+        return {k: len(self.read_note_content(k)) for k in self.gather_all_notes()}
 
     def request_note_name_for_read(self) -> str:
         note_name = input(self.NOTIFICATIONS["request_note_read"])
@@ -114,6 +121,8 @@ def main() -> None:
             case '4':
                 notes_app.delete_note()
             case '5':
+                notes_app.display_sorted_notes()
+            case '6':
                 print(notes_app.NOTIFICATIONS["bye"])
                 break
             case _:
