@@ -12,7 +12,7 @@ class NotesApp:
         self.NOTIFICATIONS = NOTIFICATION_TEXTS
 
     def read_notes(self) -> None:
-        self.show_existing_notes()
+        self.display_notes()
         requested_note = self.request_note_name_for_read()
         if path.isfile(f"{requested_note}"):
             with open(f"{requested_note}", "r", encoding="utf-8") as note_file:
@@ -61,12 +61,20 @@ class NotesApp:
             for line in note_file:
                 print(line.strip())
 
-    def show_existing_notes(self) -> None:
+    @staticmethod
+    def read_note_content(note_name) -> str:
+        with open(f"{note_name}", "r", encoding="utf-8") as note_file:
+            return note_file.read()
+
+    def display_notes(self) -> None:
         print(self.NOTIFICATIONS["accessed_note"])
+
         folder_path = path.dirname(__file__)
-        existing_notes_list = listdir(folder_path)
-        for note in [file for file in existing_notes_list if file.endswith('note.txt')]:
-            print(note)
+        all_notes: list = [file for file in listdir(folder_path) if file.endswith('note.txt')]
+        note_with_len: dict = {k: len(self.read_note_content(k)) for k in all_notes}
+
+        for note in sorted(note_with_len.items(), key=lambda x: x[1]):
+            print(note[0])
 
     def request_note_name_for_read(self) -> str:
         note_name = input(self.NOTIFICATIONS["request_note_read"])
