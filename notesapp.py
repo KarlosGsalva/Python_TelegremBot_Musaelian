@@ -15,8 +15,8 @@ class NotesApp:
         try:
             self.display_notes()
             requested_note = self.request_note_name_for_read()
-            if path.isfile(f"{requested_note}"):
-                with open(f"{requested_note}", "r", encoding="utf-8") as note_file:
+            if path.isfile(requested_note):
+                with open(requested_note, "r", encoding="utf-8") as note_file:
                     for line in note_file:
                         print(line.strip())
             else:
@@ -42,7 +42,7 @@ class NotesApp:
             if note_name is None:
                 note_name = input(self.NOTIFICATIONS["new_note_name"]) + "_note.txt"
 
-            with open(f"{note_name}", "w", encoding="utf-8") as note_file:
+            with open(note_name, "w", encoding="utf-8") as note_file:
                 print(self.NOTIFICATIONS["request_note_text"])
                 line = stdin.readline()
 
@@ -70,7 +70,7 @@ class NotesApp:
     @staticmethod
     def show_note_content(note_name) -> None:
         try:
-            with open(f"{note_name}", "r", encoding="utf-8") as note_file:
+            with open(note_name, "r", encoding="utf-8") as note_file:
                 for line in note_file:
                     print(line.strip())
         except Exception as e:
@@ -79,7 +79,7 @@ class NotesApp:
     @staticmethod
     def read_note_content(note_name) -> str:
         try:
-            with open(f"{note_name}", "r", encoding="utf-8") as note_file:
+            with open(note_name, "r", encoding="utf-8") as note_file:
                 return note_file.read()
         except Exception as e:
             print('Произошла ошибка', e)
