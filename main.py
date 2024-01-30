@@ -113,15 +113,16 @@ class TicTacToe:
         while True:
             xy_coord = input('\nВведите "х" и "y" координаты двузначным числом,\n'
                              'где первое число это координата x, второе координата y: ')
-            x_coord, y_coord = int(xy_coord) // 10, int(xy_coord) % 10
-            if self._check_right_coord(x_coord, y_coord):
+            if self._check_right_coord(xy_coord):
+                x_coord, y_coord = int(xy_coord[0]), int(xy_coord[1])
                 return x_coord, y_coord
             else:
                 print(self._mistake_input_warning())
 
-    def _check_right_coord(self, x, y) -> bool:
-        if x == '' or y == '':
+    def _check_right_coord(self, xy: str) -> bool:
+        if not xy.isdigit() or len(xy) != 2:
             return False
+        x, y = int(xy[0]), int(xy[1])
         if not (0 <= x < 3 and 0 <= y < 3):
             return False
         if self.board[x][y] in (self.player1, self.player2):
