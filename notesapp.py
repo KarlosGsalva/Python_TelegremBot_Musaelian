@@ -177,8 +177,8 @@ def main() -> None:
         print('Произошла ошибка', e)
 
 
-try:
-    if __name__ == '__main__':
+if __name__ == '__main__':
+    try:
         main()
-except KeyboardInterrupt:
-    print("\n\nExiting... работа приложения прекращена командой консоли")
+    except KeyboardInterrupt:
+        print("\n\nExiting... работа приложения прекращена командой консоли")
