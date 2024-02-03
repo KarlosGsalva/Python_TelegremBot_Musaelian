@@ -23,6 +23,16 @@ async def set_main_menu(bot: bot):  # функция для настройки �
     await bot.set_my_commands(main_menu_commands)
 
 
+# хэндлер для обработки команды start
+async def process_start_command(message: Message):
+    await message.answer(NOTIFICATION_TEXTS['hello'])
+
+
+# хэндлер для обработки команды help
+async def process_help_command(message: Message):
+    await message.answer(NOTIFICATION_TEXTS['help'])
+
+
 if __name__ == '__main__':
     # Регистрируем асинхронную функцию в диспетчере,
     # которая будет выполняться на старте бота,
