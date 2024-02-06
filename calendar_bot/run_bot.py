@@ -24,11 +24,15 @@ async def set_main_menu(bot: bot):  # функция для настройки �
 
 
 # хэндлер для обработки команды start
+@dp.message(CommandStart())  # регистрируем хендлер
 async def process_start_command(message: Message):
+    menu_text = "\n".join(f"{key}: {value}" for key, value in MENU_TEXT.items())
     await message.answer(NOTIFICATION_TEXTS['hello'])
+    await message.answer(menu_text)
 
 
 # хэндлер для обработки команды help
+@dp.message(Command(commands=['help']))  # регистрируем хендлер
 async def process_help_command(message: Message):
     await message.answer(NOTIFICATION_TEXTS['help'])
 
