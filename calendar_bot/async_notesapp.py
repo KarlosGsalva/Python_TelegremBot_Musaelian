@@ -1,5 +1,6 @@
-import asyncio
 import aiofiles
+import asyncio
+
 from os import path, listdir, remove
 from sys import stdin
 
@@ -39,19 +40,17 @@ class AsyncNotesApp:
         except Exception as e:
             print(self.NOTIFICATIONS["error"], e)
 
-    def create_note(self, note_name=None) -> None:
+    async def create_note(self, note_name=None, note_text=None) -> None:
         try:
             if note_name is None:
-                note_name = input(self.NOTIFICATIONS["new_note_name"]) + "_note.txt"
+                note_name = 'default_note_name' + '_note.txt'
 
-            with open(note_name, "w", encoding="utf-8") as note_file:
+            if note_text is None:
+                note_text = 'example note content'
+
+            async with aiofiles.open(note_name, "w", encoding="utf-8") as note_file:
                 print(self.NOTIFICATIONS["request_note_text"])
-                line = stdin.readline()
-
-                while line != '\n':
-                    note_file.write(line)
-                    line = stdin.readline()
-
+                await note_file.write(note_text)
                 print(self.NOTIFICATIONS["enter_finished"])
             print(f"Заметка {note_name} создана")
         except Exception as e:
