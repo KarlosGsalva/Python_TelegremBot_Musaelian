@@ -15,7 +15,8 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import (Message, BotCommand,
                            CallbackQuery,  # тип апдейта
                            InlineKeyboardMarkup,  # объект клавиатуры
-                           InlineKeyboardButton,)  # объект инлайн-кнопки
+                           InlineKeyboardButton, )  # объект инлайн-кнопки
+import async_notesapp
 # импортируем токен бота из закрытого файла
 from secrets import BOT_TOKEN
 # импортируем тексты меню и ответов бота
@@ -27,11 +28,15 @@ storage = MemoryStorage()
 bot_token = BOT_TOKEN
 # Создаем объекты бота и диспетчера
 bot = Bot(token=bot_token)
-dp = Dispatcher()
+dp = Dispatcher(storage=MemoryStorage())
+
+# Создаем экземляр класса AsyncNotesApp
+notes_app = async_notesapp.AsyncNotesApp()
+
 
 # Создадим 'базу данных' для избежания потери данных
 # т.к. MemoryStorage зависим от оперативной памяти
-notes_dict: dict[str | int, str] = {}
+# notes_dict: dict[str | int, str] = {}
 
 
 # Cоздаем класс, наследуемый от StatesGroup, для группы состояний нашей FSM
@@ -45,8 +50,9 @@ async def set_main_menu(bot: bot):  # функция для настройки �
                           for command, description in MENU_TEXT.items()]
     await bot.set_my_commands(main_menu_commands)
 
+
 # Создаем inline кнопку cancel
-cancel_button = InlineKeyboardButton(text='cancel', callback_data='/cancel')
+cancel_button = InlineKeyboardButton(text='отмена', callback_data='cancel')
 keyboard: list[list[InlineKeyboardButton]] = [[cancel_button]]
 markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
@@ -63,16 +69,16 @@ async def process_start_command(message: Message):
 # и сообщать, что эта команда работает только после выбора п. меню
 @dp.message(Command(commands='cancel'), StateFilter(default_state))
 async def process_cancel_command(message: Message):
-    await message.answer(text=NOTIFICATION_TEXTS['cancel'],
-                         reply_markup=markup)
+    await message.answer(text=NOTIFICATION_TEXTS['cancel'])
     await message.answer(NOTIFICATION_TEXTS['menu'])
 
 
 # Хэндлер для обработки команды /cancel в любых состояниях,
 # кроме состояния по умолчанию и отключать FSM
-@dp.message(Command(commands='cancel'), ~StateFilter(default_state))
-async def process_cancel_command(message: Message, state: FSMContext):
-    await message.answer(text=NOTIFICATION_TEXTS['exit'])
+@dp.callback_query(F.data == 'cancel',
+                   ~StateFilter(default_state))
+async def process_cancel_command(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(text=NOTIFICATION_TEXTS['exit'])
     # Сбрасываем состояние и очищаем данные, полученные внутри состояний
     await state.clear()
 
@@ -116,8 +122,23 @@ async def warning_note_name(message: Message):
 @dp.message(StateFilter(FSMWriteNotes.waiting_for_note_text))
 async def process_note_text(message: Message, state: FSMContext):
     # Сохраняем текст заметки в хранилище по ключу text
-    await message.answer(NOTIFICATION_TEXTS['text_entered'])
+
     await state.update_data(text=message.text)
+
+    # Вытаскиваем данные для создания заметки
+    user_data = await state.get_data()
+    note_name = user_data['name']
+    note_text = user_data['text']
+
+    # Создаем заметку
+    await notes_app.create_note(note_name=note_name, note_text=note_text)
+    await message.answer(NOTIFICATION_TEXTS['note_created'])
+
+
+# Хэндлер для всех неотловленных сообщений
+@dp.message(StateFilter(default_state))
+async def echo(message: Message):
+    await message.reply(text='Извините, я вас не понимать')
 
 
 if __name__ == '__main__':
@@ -126,4 +147,3 @@ if __name__ == '__main__':
     dp.startup.register(set_main_menu)
     # Запускаем long polling опрос сервера на апдейты
     dp.run_polling(bot)
-

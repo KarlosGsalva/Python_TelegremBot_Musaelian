@@ -49,10 +49,7 @@ class AsyncNotesApp:
                 note_text = 'example note content'
 
             async with aiofiles.open(note_name, "w", encoding="utf-8") as note_file:
-                print(self.NOTIFICATIONS["request_note_text"])
                 await note_file.write(note_text)
-                print(self.NOTIFICATIONS["enter_finished"])
-            print(f"Заметка {note_name} создана")
         except Exception as e:
             print(self.NOTIFICATIONS["error"], e)
 
