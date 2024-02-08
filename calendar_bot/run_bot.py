@@ -29,6 +29,10 @@ bot_token = BOT_TOKEN
 bot = Bot(token=bot_token)
 dp = Dispatcher()
 
+# Создадим 'базу данных' для избежания потери данных
+# т.к. MemoryStorage зависим от оперативной памяти
+notes_dict: dict[str | int, str] = {}
+
 
 # Cоздаем класс, наследуемый от StatesGroup, для группы состояний нашей FSM
 class FSMWriteNotes(StatesGroup):
@@ -40,6 +44,11 @@ async def set_main_menu(bot: bot):  # функция для настройки �
     main_menu_commands = [BotCommand(command=command, description=description)
                           for command, description in MENU_TEXT.items()]
     await bot.set_my_commands(main_menu_commands)
+
+# Создаем inline кнопку cancel
+cancel_button = InlineKeyboardButton(text='cancel', callback_data='/cancel')
+keyboard: list[list[InlineKeyboardButton]] = [[cancel_button]]
+markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
 # Хэндлер для обработки команды start вне состояний
@@ -54,7 +63,8 @@ async def process_start_command(message: Message):
 # и сообщать, что эта команда работает только после выбора п. меню
 @dp.message(Command(commands='cancel'), StateFilter(default_state))
 async def process_cancel_command(message: Message):
-    await message.answer(text=NOTIFICATION_TEXTS['cancel'])
+    await message.answer(text=NOTIFICATION_TEXTS['cancel'],
+                         reply_markup=markup)
     await message.answer(NOTIFICATION_TEXTS['menu'])
 
 
@@ -77,11 +87,38 @@ async def process_help_command(message: Message):
 # Хэндлер для обработки команды меню 1: Создать заметку
 @dp.message(Command(commands=['1']), StateFilter(default_state))
 async def process_create_note(message: Message, state: FSMContext):
-    await message.answer(text=NOTIFICATION_TEXTS['new_note_name'])
+    await message.answer(text=NOTIFICATION_TEXTS['request_note_name'])
     # Устанавливаем состояние ожидания ввода названия заметки
     await state.set_state(FSMWriteNotes.waiting_for_note_name)
-    # Устанавливаем состояние ожидания ввода текста заметки
+
+
+# Хэндлер для проверки введения названия заметки и перевода
+# в состояние ожидания ввода текста заметки
+@dp.message(StateFilter(FSMWriteNotes.waiting_for_note_name), F.text)
+async def process_note_name(message: Message, state: FSMContext):
+    # Сохраняем данные внутри контекста асинх. методом update_data()
+    # на случай отмены ввода
+    await state.update_data(name=message.text)
+    await message.answer(text=NOTIFICATION_TEXTS['request_note_text'],
+                         reply_markup=markup)
+    # Устанавливаем состояние ввода текста заметки
     await state.set_state(FSMWriteNotes.waiting_for_note_text)
+
+
+# Хэндлер для обработки введения некорректного названия заметки
+@dp.message(StateFilter(FSMWriteNotes.waiting_for_note_name))
+async def warning_note_name(message: Message):
+    await message.answer(text=NOTIFICATION_TEXTS['incorrect_note_name'],
+                         reply_markup=markup)
+
+
+# Хэндлер для обработки введения текста заметки
+@dp.message(StateFilter(FSMWriteNotes.waiting_for_note_text))
+async def process_note_text(message: Message, state: FSMContext):
+    # Сохраняем текст заметки в хранилище по ключу text
+    await message.answer(NOTIFICATION_TEXTS['text_entered'])
+    await state.update_data(text=message.text)
+
 
 if __name__ == '__main__':
     # Регистрируем асинхронную функцию в диспетчере,
