@@ -16,11 +16,14 @@ from aiogram.types import (Message, BotCommand,
                            CallbackQuery,  # тип апдейта
                            InlineKeyboardMarkup,  # объект клавиатуры
                            InlineKeyboardButton, )  # объект инлайн-кнопки
+# импортируем бэкенд приложения
 import async_notesapp
-# импортируем токен бота из закрытого файла
-from secrets import BOT_TOKEN
 # импортируем тексты меню и ответов бота
 from constant_texts import MENU_TEXT, NOTIFICATION_TEXTS
+# импортируем токен бота из закрытого файла
+from secrets import BOT_TOKEN
+# импортируем клавиатуры
+import keyboards as kb
 
 # Инициализируем хранилище (создаем экземпляр класса MemoryStorage)
 storage = MemoryStorage()
@@ -43,18 +46,13 @@ notes_app = async_notesapp.AsyncNotesApp()
 class FSMWriteNotes(StatesGroup):
     waiting_for_note_name = State()  # Состояние ожидания ввода названия заметки
     waiting_for_note_text = State()  # Состояние ожидания ввода текста заметки
+    waiting_for_note_delete = State()  # Состояние ожидания названия заметки для удаления
 
 
 async def set_main_menu(bot: bot):  # функция для настройки меню бота
     main_menu_commands = [BotCommand(command=command, description=description)
                           for command, description in MENU_TEXT.items()]
     await bot.set_my_commands(main_menu_commands)
-
-
-# Создаем inline кнопку cancel
-cancel_button = InlineKeyboardButton(text='отмена', callback_data='cancel')
-keyboard: list[list[InlineKeyboardButton]] = [[cancel_button]]
-markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
 # Хэндлер для обработки команды start вне состояний
@@ -79,6 +77,8 @@ async def process_cancel_command(message: Message):
                    ~StateFilter(default_state))
 async def process_cancel_command(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(text=NOTIFICATION_TEXTS['exit'])
+    # Подтверждаем получение callback, чтобы кнопка не подсвечивалась
+    await callback.answer()
     # Сбрасываем состояние и очищаем данные, полученные внутри состояний
     await state.clear()
 
@@ -93,20 +93,21 @@ async def process_help_command(message: Message):
 # Хэндлер для обработки команды меню 1: Создать заметку
 @dp.message(Command(commands=['1']), StateFilter(default_state))
 async def process_create_note(message: Message, state: FSMContext):
-    await message.answer(text=NOTIFICATION_TEXTS['request_note_name'])
+    await message.answer(text=NOTIFICATION_TEXTS['request_note_name'],
+                         reply_markup=kb.cancel_markup)
     # Устанавливаем состояние ожидания ввода названия заметки
     await state.set_state(FSMWriteNotes.waiting_for_note_name)
 
 
 # Хэндлер для проверки введения названия заметки и перевода
 # в состояние ожидания ввода текста заметки
-@dp.message(StateFilter(FSMWriteNotes.waiting_for_note_name), F.text)
+@dp.message(StateFilter(FSMWriteNotes.waiting_for_note_name))
 async def process_note_name(message: Message, state: FSMContext):
     # Сохраняем данные внутри контекста асинх. методом update_data()
     # на случай отмены ввода
     await state.update_data(name=message.text)
     await message.answer(text=NOTIFICATION_TEXTS['request_note_text'],
-                         reply_markup=markup)
+                         reply_markup=kb.cancel_markup)
     # Устанавливаем состояние ввода текста заметки
     await state.set_state(FSMWriteNotes.waiting_for_note_text)
 
@@ -115,7 +116,7 @@ async def process_note_name(message: Message, state: FSMContext):
 @dp.message(StateFilter(FSMWriteNotes.waiting_for_note_name))
 async def warning_note_name(message: Message):
     await message.answer(text=NOTIFICATION_TEXTS['incorrect_note_name'],
-                         reply_markup=markup)
+                         reply_markup=kb.cancel_markup)
 
 
 # Хэндлер для обработки введения текста заметки
@@ -133,6 +134,16 @@ async def process_note_text(message: Message, state: FSMContext):
     # Создаем заметку
     await notes_app.create_note(note_name=note_name, note_text=note_text)
     await message.answer(NOTIFICATION_TEXTS['note_created'])
+    await state.set_state(default_state)
+
+
+# Хэндлер для обработки команды меню 4: Удалить заметку
+@dp.message(Command(commands=['4']), StateFilter(default_state))
+async def process_delete_note(message: Message, state: FSMContext):
+    await message.answer(text=NOTIFICATION_TEXTS['choose_for_delete'],
+                         reply_markup=kb.cancel_markup)
+    # Устанавливаем состояние ожидания ввода названия заметки
+    await state.set_state(FSMWriteNotes.waiting_for_note_delete)
 
 
 # Хэндлер для всех неотловленных сообщений

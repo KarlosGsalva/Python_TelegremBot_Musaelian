@@ -14,6 +14,39 @@ class AsyncNotesApp:
         self.MENU_TEXT: dict = MENU_TEXT
         self.NOTIFICATIONS: dict = NOTIFICATION_TEXTS
 
+    async def create_note(self, note_name=None, note_text=None) -> None:
+        try:
+            if note_name is None:
+                note_name = 'default_note_name' + '_note.txt'
+
+            if note_text is None:
+                note_text = 'example note content'
+
+            async with aiofiles.open(f"{note_name}_note.txt", "w", encoding="utf-8") as note_file:
+                await note_file.write(note_text)
+        except Exception as e:
+            print(self.NOTIFICATIONS["error"], e)
+
+    async def delete_note(self) -> None:
+        try:
+            requested_note = self.request_note_name_for_delete()
+            if path.isfile(requested_note):
+                remove(requested_note)
+                print(f"\nЗаметка {requested_note} удалена")
+            else:
+                print(self.NOTIFICATIONS["note_not_exist"])
+                self.delete_note()
+        except Exception as e:
+            print(self.NOTIFICATIONS["error"], e)
+
+    def request_note_name_for_delete(self, note_name=None) -> str:
+        try:
+            if note_name is None:
+                note_name = input(self.NOTIFICATIONS["request_note_delete"])
+            return f"{note_name}_note.txt"
+        except Exception as e:
+            print(self.NOTIFICATIONS["error"], e)
+
     def read_notes(self) -> None:
         try:
             self.display_notes()
@@ -37,31 +70,6 @@ class AsyncNotesApp:
             else:
                 print(self.NOTIFICATIONS["note_not_exist"])
                 self.edit_note()
-        except Exception as e:
-            print(self.NOTIFICATIONS["error"], e)
-
-    async def create_note(self, note_name=None, note_text=None) -> None:
-        try:
-            if note_name is None:
-                note_name = 'default_note_name' + '_note.txt'
-
-            if note_text is None:
-                note_text = 'example note content'
-
-            async with aiofiles.open(note_name, "w", encoding="utf-8") as note_file:
-                await note_file.write(note_text)
-        except Exception as e:
-            print(self.NOTIFICATIONS["error"], e)
-
-    def delete_note(self) -> None:
-        try:
-            requested_note = self.request_note_name_for_delete()
-            if path.isfile(requested_note):
-                remove(requested_note)
-                print(f"\nЗаметка {requested_note} удалена")
-            else:
-                print(self.NOTIFICATIONS["note_not_exist"])
-                self.delete_note()
         except Exception as e:
             print(self.NOTIFICATIONS["error"], e)
 
@@ -140,13 +148,6 @@ class AsyncNotesApp:
     def request_note_name_for_edit(self) -> str:
         try:
             note_name = input(self.NOTIFICATIONS["request_note_edit"])
-            return f"{note_name}_note.txt"
-        except Exception as e:
-            print(self.NOTIFICATIONS["error"], e)
-
-    def request_note_name_for_delete(self) -> str:
-        try:
-            note_name = input(self.NOTIFICATIONS["request_note_delete"])
             return f"{note_name}_note.txt"
         except Exception as e:
             print(self.NOTIFICATIONS["error"], e)
