@@ -4,8 +4,7 @@ MENU_TEXT: dict = {"/1": "Создать заметку",
                    "/4": "Удалить заметку",
                    "/5": "Показать отсортированные по длинне заметки",
                    "/6": "Выйти из меню",
-                   "/start": "start",
-                   "/cancel": "выйти из приложения"}
+                   "/start": "start"}
 
 NOTIFICATION_TEXTS: dict = {"choice_menu_point": "\nПожалуйста, выберите пункт меню:\n",
                             "enter_menu_point": "\nВведите номер команды от 1 до 6: ",
@@ -24,7 +23,8 @@ NOTIFICATION_TEXTS: dict = {"choice_menu_point": "\nПожалуйста, выб
                                                    "/cancel",
                                               "enter_finished": "Ввод завершен\n",
                             "request_note_text": "\nВведите текст заметки, чтобы прервать ввод введите /cancel:",
-                            "request_note_name": "\nВведите название заметки: ",
+                            "request_note_name": "\nВведите название заметки или нажмите кнопку 'отмена'"
+                                                 "\nдля выхода из приложения:",
                             "bye": "Ок, увидимся ;)",
                             "sorted_notes": "Пожалуйста, имеющиеся заметки в упорядоченном виде: \n",
                             "error": "Произошла ошибка",
@@ -35,4 +35,6 @@ NOTIFICATION_TEXTS: dict = {"choice_menu_point": "\nПожалуйста, выб
                             "exit": "Вы вышли из приложения\n\n"
                                     "Чтобы снова приступить к работе введите команду /start",
                             "note_created": "Заявка создана.",
+                            "choose_for_delete": "Выберите заметку для удаления:",
+                            "note_deleted": "Заметка удалена.",
                             "menu": "\n".join(f"{key}: {value}" for key, value in MENU_TEXT.items())}
