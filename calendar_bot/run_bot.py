@@ -81,6 +81,7 @@ async def process_cancel_command(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     # Сбрасываем состояние и очищаем данные, полученные внутри состояний
     await state.clear()
+    await state.set_state(default_state)
 
 
 # Хэндлер для обработки команды help
@@ -140,10 +141,22 @@ async def process_note_text(message: Message, state: FSMContext):
 # Хэндлер для обработки команды меню 4: Удалить заметку
 @dp.message(Command(commands=['4']), StateFilter(default_state))
 async def process_delete_note(message: Message, state: FSMContext):
+    keyboard = await kb.delete_notes_keyboard()
     await message.answer(text=NOTIFICATION_TEXTS['choose_for_delete'],
-                         reply_markup=kb.cancel_markup)
+                         reply_markup=keyboard)
     # Устанавливаем состояние ожидания ввода названия заметки
     await state.set_state(FSMWriteNotes.waiting_for_note_delete)
+
+
+@dp.callback_query(F.data.startswith('delete_'),
+                   StateFilter(FSMWriteNotes.waiting_for_note_delete))
+async def process_delete_note(callback: CallbackQuery, state: FSMContext):
+    note_name = callback.data[7:]
+    await notes_app.delete_note(note_name)
+    await callback.answer()
+    await callback.message.answer(NOTIFICATION_TEXTS['note_deleted'])
+    await state.clear()
+    await state.set_state(default_state)
 
 
 # Хэндлер для всех неотловленных сообщений

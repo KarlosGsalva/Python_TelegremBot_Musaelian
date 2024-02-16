@@ -1,37 +1,32 @@
 from aiogram.utils.keyboard import (InlineKeyboardBuilder,
                                     InlineKeyboardButton,
                                     InlineKeyboardMarkup)
-from os import listdir, path
-
-# инициализируем билдер для формирования клавиатуры
-ikb_builder = InlineKeyboardBuilder()
+import async_notesapp as an
+import asyncio
 
 
-# собираем список заметок из текущей директории
-# если директория не указана
-def _gather_all_notes(main_path=None) -> list:
-    try:
-        if main_path is None:
-            main_path = path.dirname(__file__)
-        return [note for note in listdir(main_path) if note.endswith('note.txt')]
-    except Exception as e:
-        print('Произошла ошибка', e)
-
-
-def _make_inline_buttons() -> list:
+async def _make_inline_buttons() -> list:
     buttons: list[InlineKeyboardButton] = []
-    for note in _gather_all_notes():
-        button = InlineKeyboardButton(text=f"Удалить {note}", callback_data='delete_button')
+    files = await asyncio.to_thread(lambda: an.AsyncNotesApp.gather_all_notes())
+    for note in files:
+        button = InlineKeyboardButton(text=f"Удалить {note}", callback_data=f"delete_{note}")
         buttons.append(button)
+    buttons.append(InlineKeyboardButton(text='отмена', callback_data='cancel'))
     return buttons
 
+
+async def delete_notes_keyboard():
+    # инициализируем билдер для формирования клавиатуры
+    ikb_builder = InlineKeyboardBuilder()
+    buttons = await _make_inline_buttons()
+    ikb_builder.row(*buttons, width=1)
+    return ikb_builder.as_markup()
 
 # Создаем inline кнопку cancel
 cancel_button = InlineKeyboardButton(text='отмена', callback_data='cancel')
 keyboard: list[list[InlineKeyboardButton]] = [[cancel_button]]
 cancel_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
-ikb_builder.row(*_make_inline_buttons())
 
 
 

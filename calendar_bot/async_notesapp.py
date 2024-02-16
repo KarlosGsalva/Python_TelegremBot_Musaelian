@@ -1,4 +1,5 @@
 import aiofiles
+import aiofiles.os
 import asyncio
 
 from os import path, listdir, remove
@@ -22,20 +23,14 @@ class AsyncNotesApp:
             if note_text is None:
                 note_text = 'example note content'
 
-            async with aiofiles.open(f"{note_name}_note.txt", "w", encoding="utf-8") as note_file:
+            async with aiofiles.open(f"{note_name}_note.txt", "a", encoding="utf-8") as note_file:
                 await note_file.write(note_text)
         except Exception as e:
             print(self.NOTIFICATIONS["error"], e)
 
-    async def delete_note(self) -> None:
+    async def delete_note(self, note) -> None:
         try:
-            requested_note = self.request_note_name_for_delete()
-            if path.isfile(requested_note):
-                remove(requested_note)
-                print(f"\nЗаметка {requested_note} удалена")
-            else:
-                print(self.NOTIFICATIONS["note_not_exist"])
-                self.delete_note()
+            await aiofiles.os.remove(note)
         except Exception as e:
             print(self.NOTIFICATIONS["error"], e)
 
@@ -93,14 +88,14 @@ class AsyncNotesApp:
             print('Произошла ошибка', e)
             return ""
 
+    # собираем список заметок из текущей директории
+    # если директория не указана
     @staticmethod
-    async def gather_all_notes() -> list:
+    def gather_all_notes(main_path=None) -> list:
         try:
-            # Используем asyncio.to_thread для асинхронного выполнения синхронной функции
-            files = await asyncio.to_thread(
-                lambda: [file for file in listdir(path.dirname(__file__)) if file.endswith('note.txt')]
-            )
-            return files
+            if main_path is None:
+                main_path = path.dirname(__file__)
+            return [note for note in listdir(main_path) if note.endswith('note.txt')]
         except Exception as e:
             print('Произошла ошибка', e)
             return []
@@ -127,7 +122,7 @@ class AsyncNotesApp:
     async def make_dict_for_sort(self) -> dict:
         try:
             # Сначала получаем список заметок асинхронно
-            notes = await self.gather_all_notes()
+            notes = self.gather_all_notes()
             # Теперь нам нужно асинхронно прочитать содержимое каждой заметки.
             # Используем асинхронное списковое включение с asyncio.gather для выполнения всех
             # асинхронных операций чтения содержимого заметок
