@@ -19,7 +19,7 @@ from aiogram.types import (Message, BotCommand,
 # импортируем бэкенд приложения
 import async_notesapp
 # импортируем тексты меню и ответов бота
-from constant_texts import MENU_TEXT, NOTIFICATION_TEXTS
+from constant_texts import MENU_TEXT, NOTIFICATION_TEXTS, MODES
 # импортируем токен бота из закрытого файла
 from secrets import BOT_TOKEN
 # импортируем клавиатуры
@@ -37,16 +37,12 @@ dp = Dispatcher(storage=MemoryStorage())
 notes_app = async_notesapp.AsyncNotesApp()
 
 
-# Создадим 'базу данных' для избежания потери данных
-# т.к. MemoryStorage зависим от оперативной памяти
-# notes_dict: dict[str | int, str] = {}
-
-
 # Cоздаем класс, наследуемый от StatesGroup, для группы состояний нашей FSM
 class FSMWriteNotes(StatesGroup):
     waiting_for_note_name = State()  # Состояние ожидания ввода названия заметки
     waiting_for_note_text = State()  # Состояние ожидания ввода текста заметки
-    waiting_for_note_delete = State()  # Состояние ожидания названия заметки для удаления
+    waiting_for_note_delete = State()  # Состояние ожидания выбора заметки на удаление
+    waiting_for_note_read = State()  # Состояние ожидания выбора заметки на чтение
 
 
 async def set_main_menu(bot: bot):  # функция для настройки меню бота
@@ -113,18 +109,10 @@ async def process_note_name(message: Message, state: FSMContext):
     await state.set_state(FSMWriteNotes.waiting_for_note_text)
 
 
-# Хэндлер для обработки введения некорректного названия заметки
-@dp.message(StateFilter(FSMWriteNotes.waiting_for_note_name))
-async def warning_note_name(message: Message):
-    await message.answer(text=NOTIFICATION_TEXTS['incorrect_note_name'],
-                         reply_markup=kb.cancel_markup)
-
-
 # Хэндлер для обработки введения текста заметки
 @dp.message(StateFilter(FSMWriteNotes.waiting_for_note_text))
 async def process_note_text(message: Message, state: FSMContext):
     # Сохраняем текст заметки в хранилище по ключу text
-
     await state.update_data(text=message.text)
 
     # Вытаскиваем данные для создания заметки
@@ -138,13 +126,38 @@ async def process_note_text(message: Message, state: FSMContext):
     await state.set_state(default_state)
 
 
+# Хэндлер для обработки команды меню 2: Прочитать заметку
+@dp.message(Command(commands=['2']), StateFilter(default_state))
+async def read_note(message: Message, state: FSMContext):
+    keyboard = await kb.make_notes_as_inline_buttons(MODES['read'])
+    await message.answer(text=NOTIFICATION_TEXTS['choose_for_read'],
+                         reply_markup=keyboard)
+    # Устанавливаем состояние ожидания выбора заметки
+    await state.set_state(FSMWriteNotes.waiting_for_note_read)
+
+
+# Ловим выбранную заметку для чтения, выводим текст в чат
+@dp.callback_query(F.data.startswith('read_'),
+                   StateFilter(FSMWriteNotes.waiting_for_note_read))
+async def process_read_note(callback: CallbackQuery, state: FSMContext):
+    note_name = callback.data[5:]
+    note_text = await notes_app.read_note(note_name)
+    if note_text is None:
+        await callback.message.answer(NOTIFICATION_TEXTS['unsuccessful_read'])
+    else:
+        await callback.message.answer(note_text)
+    await callback.answer()
+    await state.clear()
+    await state.set_state(default_state)
+
+
 # Хэндлер для обработки команды меню 4: Удалить заметку
 @dp.message(Command(commands=['4']), StateFilter(default_state))
 async def process_delete_note(message: Message, state: FSMContext):
-    keyboard = await kb.delete_notes_keyboard()
+    keyboard = await kb.make_notes_as_inline_buttons(MODES['delete'])
     await message.answer(text=NOTIFICATION_TEXTS['choose_for_delete'],
                          reply_markup=keyboard)
-    # Устанавливаем состояние ожидания ввода названия заметки
+    # Устанавливаем состояние ожидания выбора заметки на удаление
     await state.set_state(FSMWriteNotes.waiting_for_note_delete)
 
 
