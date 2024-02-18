@@ -178,6 +178,8 @@ async def extract_note_name_for_edit(callback: CallbackQuery, state: FSMContext)
     # Запрашиваем у пользователя новый текст заметки
     await callback.message.answer(NOTIFICATION_TEXTS['request_note_text'],
                                   reply_markup=kb.cancel_markup)
+    # Убираем часы с инлайн кнопки
+    await callback.answer()
     # Переводим пользователя в State для ввода текста заметки
     await state.set_state(FSMWriteNotes.waiting_for_note_text_edit)
 
