@@ -15,14 +15,8 @@ class AsyncNotesApp:
         self.MENU_TEXT: dict = MENU_TEXT
         self.NOTIFICATIONS: dict = NOTIFICATION_TEXTS
 
-    async def create_note(self, note_name=None, note_text=None) -> None:
+    async def create_note(self, note_name, note_text) -> None:
         try:
-            if note_name is None:
-                note_name = 'default_note_name' + '_note.txt'
-
-            if note_text is None:
-                note_text = 'example note content'
-
             async with aiofiles.open(f"{note_name}_note.txt", "a", encoding="utf-8") as note_file:
                 await note_file.write(note_text)
         except Exception as e:
@@ -43,15 +37,10 @@ class AsyncNotesApp:
             print(self.NOTIFICATIONS["error_read"], e)
             return None
 
-    def edit_note(self) -> None:
+    async def edit_note(self, note_name, note_text) -> None:
         try:
-            requested_note = self.request_note_name_for_edit()
-            if path.isfile(requested_note):
-                self.show_note_content(requested_note)
-                self.create_note(requested_note)
-            else:
-                print(self.NOTIFICATIONS["note_not_exist"])
-                self.edit_note()
+            async with aiofiles.open(note_name, 'w', encoding="utf-8") as note_file:
+                await note_file.write(note_text)
         except Exception as e:
             print(self.NOTIFICATIONS["error"], e)
 

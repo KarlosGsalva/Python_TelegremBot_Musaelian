@@ -43,6 +43,8 @@ class FSMWriteNotes(StatesGroup):
     waiting_for_note_text = State()  # Состояние ожидания ввода текста заметки
     waiting_for_note_delete = State()  # Состояние ожидания выбора заметки на удаление
     waiting_for_note_read = State()  # Состояние ожидания выбора заметки на чтение
+    waiting_for_note_name_edit = State()  # Состояние извлечения имени заметки на редактирование
+    waiting_for_note_text_edit = State()  # Состояние получения нового текста редактируемой заметки
 
 
 async def set_main_menu(bot: bot):  # функция для настройки меню бота
@@ -123,7 +125,7 @@ async def process_note_text(message: Message, state: FSMContext):
     # Создаем заметку
     await notes_app.create_note(note_name=note_name, note_text=note_text)
     await message.answer(NOTIFICATION_TEXTS['note_created'])
-    await state.set_state(default_state)
+    await state.clear()
 
 
 # Хэндлер для обработки команды меню 2: Прочитать заметку
@@ -151,9 +153,59 @@ async def process_read_note(callback: CallbackQuery, state: FSMContext):
     await state.set_state(default_state)
 
 
+# Хэндлер для обработки команды меню 3: редактировать заметку
+@dp.message(Command(commands=['3']), StateFilter(default_state))
+async def edit_note(message: Message, state: FSMContext):
+    # Формируем клавиатуру с callback под редактирование
+    keyboard = await kb.make_notes_as_inline_buttons(MODES['edit'])
+    # Пишем сообщение о том, что надо выбрать заметку на редактирование
+    # выдаем клавиатуру, где каждая инлайн кнопка - отдельная заметка
+    await message.answer(text=NOTIFICATION_TEXTS['choose_for_edit'],
+                         reply_markup=keyboard)
+    # Устанавливаем состояние для извлечения названия выбранной заметки
+    # и сохранением в State
+    await state.set_state(FSMWriteNotes.waiting_for_note_name_edit)
+
+
+# Ловим выбранную заметку на редактирование сохраняем имя в state
+@dp.callback_query(F.data.startswith('edit_'),
+                   StateFilter(FSMWriteNotes.waiting_for_note_name_edit))
+async def extract_note_name_for_edit(callback: CallbackQuery, state: FSMContext):
+    # Выстаскиваем имя заметки из callback инлайн кнопки
+    note_name = callback.data[5:]
+    # Сохраняем в State
+    await state.update_data(note_name=note_name)
+    # Запрашиваем у пользователя новый текст заметки
+    await callback.message.answer(NOTIFICATION_TEXTS['request_note_text'],
+                                  reply_markup=kb.cancel_markup)
+    # Переводим пользователя в State для ввода текста заметки
+    await state.set_state(FSMWriteNotes.waiting_for_note_text_edit)
+
+
+# Хэндлер для получения обновленного текста и изменения заметки
+@dp.message(StateFilter(FSMWriteNotes.waiting_for_note_text_edit))
+async def process_new_note_text(message: Message, state: FSMContext):
+    # Получаем новый текст заметки из апдейта-сообщения пользователя
+    new_note_text = message.text
+    # Сохраняем полученный текст в State
+    await state.update_data(note_text=new_note_text)
+
+    # Забираем данные из State
+    user_data = await state.get_data()
+    note_name = user_data['note_name']
+    new_note_text = user_data['note_text']
+
+    # Вызываем функцию для изменения заметки
+    await notes_app.edit_note(note_name=note_name, note_text=new_note_text)
+    # Уведомляем об успешном изменении заметки
+    await message.answer(NOTIFICATION_TEXTS['note_updated'])
+    # Обнуляем State
+    await state.clear()
+
+
 # Хэндлер для обработки команды меню 4: Удалить заметку
 @dp.message(Command(commands=['4']), StateFilter(default_state))
-async def process_delete_note(message: Message, state: FSMContext):
+async def delete_note(message: Message, state: FSMContext):
     keyboard = await kb.make_notes_as_inline_buttons(MODES['delete'])
     await message.answer(text=NOTIFICATION_TEXTS['choose_for_delete'],
                          reply_markup=keyboard)

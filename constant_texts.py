@@ -37,10 +37,15 @@ NOTIFICATION_TEXTS: dict = {"choice_menu_point": "\nПожалуйста, выб
                             "exit": "Вы вышли из приложения\n\n"
                                     "Чтобы снова приступить к работе введите команду /start",
                             "note_created": "Заявка создана.",
+                            "note_updated": "Заявка отредактирована",
                             "choose_for_delete": "Выберите заметку для удаления:",
                             "choose_for_read": "Выберите заметку для чтения:",
+                            "choose_for_edit": "Выберите заметку для редактирования:\n\n"
+                                               "Редактирование подразумевает полное удаление старого\n"
+                                               "текста заметки и замещение на новый",
                             "note_deleted": "Заметка удалена.",
                             "menu": "\n".join(f"{key}: {value}" for key, value in MENU_TEXT.items())}
 
 MODES = {'delete': 'delete',
-         'read': 'read'}
+         'read': 'read',
+         'edit': 'edit'}

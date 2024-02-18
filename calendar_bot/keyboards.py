@@ -22,6 +22,8 @@ async def _make_callback_inline_buttons(mode: str) -> list | None:
                 button = InlineKeyboardButton(text=f"Удалить {note}", callback_data=f"delete_{note}")
             elif mode == 'read':
                 button = InlineKeyboardButton(text=f"Прочитать {note}", callback_data=f"read_{note}")
+            elif mode == 'edit':
+                button = InlineKeyboardButton(text=f"Редактировать {note}", callback_data=f"edit_{note}")
             if button is not None:
                 buttons.append(button)
         buttons.append(cancel_button)
