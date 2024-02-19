@@ -13,9 +13,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 # Message это объект, содержащий информацию о сообщении в Telegram
 # BotCommand для управления командами бота
 from aiogram.types import (Message, BotCommand,
-                           CallbackQuery,  # тип апдейта
-                           InlineKeyboardMarkup,  # объект клавиатуры
-                           InlineKeyboardButton, )  # объект инлайн-кнопки
+                           CallbackQuery)
 # импортируем бэкенд приложения
 import async_notesapp
 # импортируем тексты меню и ответов бота
