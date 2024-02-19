@@ -1,3 +1,0 @@
-1. django
-2. fastapi
-3. drf
