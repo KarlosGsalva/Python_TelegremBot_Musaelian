@@ -22,7 +22,7 @@ NOTIFICATION_TEXTS: dict = {"choice_menu_point": "\nПожалуйста, выб
                                                    "Если вы хотите прервать ввод, отправьте команду\n"
                                                    "/cancel",
                                               "enter_finished": "Ввод завершен\n",
-                            "request_note_text": "\nВведите текст заметки, чтобы прервать ввод введите /cancel:",
+                            "request_note_text": "\nВведите текст заметки, чтобы прервать ввод нажмите отмену:",
                             "request_note_name": "\nВведите название заметки или нажмите кнопку 'отмена'"
                                                  "\nдля выхода из приложения:",
                             "bye": "Ок, увидимся ;)",
@@ -48,4 +48,5 @@ NOTIFICATION_TEXTS: dict = {"choice_menu_point": "\nПожалуйста, выб
 
 MODES = {'delete': 'delete',
          'read': 'read',
-         'edit': 'edit'}
+         'edit': 'edit',
+         'show_notes': 'show_notes'}

@@ -1,3 +1,4 @@
+from aiogram.utils.keyboard import InlineKeyboardButton
 import aiofiles
 import aiofiles.os
 import asyncio
@@ -22,12 +23,6 @@ class AsyncNotesApp:
         except Exception as e:
             print(self.NOTIFICATIONS["error"], e)
 
-    async def delete_note(self, note) -> None:
-        try:
-            await aiofiles.os.remove(note)
-        except Exception as e:
-            print(self.NOTIFICATIONS["error"], e)
-
     async def read_note(self, note) -> str | None:
         try:
             async with aiofiles.open(note, 'r', encoding="utf-8") as note_file:
@@ -43,6 +38,53 @@ class AsyncNotesApp:
                 await note_file.write(note_text)
         except Exception as e:
             print(self.NOTIFICATIONS["error"], e)
+
+    async def delete_note(self, note) -> None:
+        try:
+            await aiofiles.os.remove(note)
+        except Exception as e:
+            print(self.NOTIFICATIONS["error"], e)
+
+    # Создаем кнопки для демонстрации отсортированных заметок
+    async def sorted_notes_inline_buttons(self) -> list:
+        buttons_list: list[InlineKeyboardButton] = []
+        notes: list = await self.sort_notes()
+        for note in notes:
+            buttons_list.append(InlineKeyboardButton(text=f"Заметка {note[:-9]}",
+                                                     callback_data=f"show_note_{note}"))
+        return buttons_list
+
+    async def sort_notes(self) -> list | None:
+        try:
+            notes: dict = await self._make_dict_for_sort_notes()
+            return sorted((note[0] for note in notes.items()), key=lambda note: note[1], reverse=True)
+        except Exception as e:
+            print('Произошла ошибка', e)
+            return None
+
+    async def _make_dict_for_sort_notes(self) -> dict | None:
+        try:
+            notes_len: dict = {}
+            notes = await asyncio.to_thread(lambda: self.gather_all_notes())
+            for note in notes:
+                async with aiofiles.open(note, 'r', encoding="utf-8") as note_file:
+                    len_file = await note_file.read()
+                    notes_len[note] = len(len_file)
+            return notes_len
+        except Exception as e:
+            print('Произошла ошибка', e)
+            return None
+
+    # Собираем список заметок из текущей директории, если директория не указана
+    @staticmethod
+    def gather_all_notes(main_path=None) -> list:
+        try:
+            if main_path is None:
+                main_path = path.dirname(__file__)
+            return [note for note in listdir(main_path) if note.endswith('note.txt')]
+        except Exception as e:
+            print('Произошла ошибка', e)
+            return []
 
     def request_note_name_for_delete(self, note_name=None) -> str:
         try:
@@ -72,17 +114,7 @@ class AsyncNotesApp:
             print('Произошла ошибка', e)
             return ""
 
-    # собираем список заметок из текущей директории
-    # если директория не указана
-    @staticmethod
-    def gather_all_notes(main_path=None) -> list:
-        try:
-            if main_path is None:
-                main_path = path.dirname(__file__)
-            return [note for note in listdir(main_path) if note.endswith('note.txt')]
-        except Exception as e:
-            print('Произошла ошибка', e)
-            return []
+
 
     def display_notes(self) -> None:
         try:

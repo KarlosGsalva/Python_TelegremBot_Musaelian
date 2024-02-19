@@ -1,7 +1,7 @@
 from aiogram.utils.keyboard import (InlineKeyboardBuilder,
                                     InlineKeyboardButton,
                                     InlineKeyboardMarkup)
-import async_notesapp as an
+import async_notesapp
 import asyncio
 
 from constant_texts import NOTIFICATION_TEXTS
@@ -11,19 +11,26 @@ cancel_button = InlineKeyboardButton(text='отмена', callback_data='cancel'
 keyboard: list[list[InlineKeyboardButton]] = [[cancel_button]]
 cancel_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
+# Создаем экземпляр класса
+async_notes_app = async_notesapp.AsyncNotesApp()
+
 
 async def _make_callback_inline_buttons(mode: str) -> list | None:
     try:
         buttons: list[InlineKeyboardButton] = []
-        files = await asyncio.to_thread(lambda: an.AsyncNotesApp.gather_all_notes())
+        files = await asyncio.to_thread(lambda: async_notes_app.gather_all_notes())
+        if mode == 'show_notes':
+            buttons = await async_notes_app.sorted_notes_inline_buttons()
+            buttons.append(cancel_button)
+            return buttons
         for note in files:
             # Создаем кнопки в зависимости от mode'а
             if mode == 'delete':
-                button = InlineKeyboardButton(text=f"Удалить {note}", callback_data=f"delete_{note}")
+                button = InlineKeyboardButton(text=f"Удалить {note[:-9]}", callback_data=f"delete_{note}")
             elif mode == 'read':
-                button = InlineKeyboardButton(text=f"Прочитать {note}", callback_data=f"read_{note}")
+                button = InlineKeyboardButton(text=f"Прочитать {note[:-9]}", callback_data=f"read_{note}")
             elif mode == 'edit':
-                button = InlineKeyboardButton(text=f"Редактировать {note}", callback_data=f"edit_{note}")
+                button = InlineKeyboardButton(text=f"Редактировать {note[:-9]}", callback_data=f"edit_{note}")
             if button is not None:
                 buttons.append(button)
         buttons.append(cancel_button)

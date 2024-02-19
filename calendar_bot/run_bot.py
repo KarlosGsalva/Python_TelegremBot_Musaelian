@@ -223,7 +223,15 @@ async def process_delete_note(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.answer(NOTIFICATION_TEXTS['note_deleted'])
     await state.clear()
-    await state.set_state(default_state)
+
+
+# Хэндлер для обработки команды меню 5: показать
+# отсортированные заметки
+@dp.message(Command(commands=['5']), StateFilter(default_state))
+async def show_sorted_notes(message: Message, state: FSMContext):
+    keyboard = await kb.make_notes_as_inline_buttons(MODES['show_notes'])
+    await message.answer(text=NOTIFICATION_TEXTS['sorted_notes'],
+                         reply_markup=keyboard)
 
 
 # Хэндлер для всех неотловленных сообщений
