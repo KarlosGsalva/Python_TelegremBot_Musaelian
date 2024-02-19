@@ -21,7 +21,6 @@ async def _make_callback_inline_buttons(mode: str) -> list | None:
         files = await asyncio.to_thread(lambda: async_notes_app.gather_all_notes())
         if mode == 'show_notes':
             buttons = await async_notes_app.sorted_notes_inline_buttons()
-            buttons.append(cancel_button)
             return buttons
         for note in files:
             # Создаем кнопки в зависимости от mode'а
