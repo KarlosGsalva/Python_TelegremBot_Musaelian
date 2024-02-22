@@ -206,6 +206,7 @@ async def delete_note(message: Message, state: FSMContext):
     await state.set_state(FSMWriteNotes.waiting_for_note_delete)
 
 
+# Ловим апдейт, удаляем заметку с уведомлением
 @dp.callback_query(F.data.startswith("delete_"),
                    StateFilter(FSMWriteNotes.waiting_for_note_delete))
 async def process_delete_note(callback: CallbackQuery, state: FSMContext):
@@ -216,12 +217,21 @@ async def process_delete_note(callback: CallbackQuery, state: FSMContext):
     await state.clear()
 
 
-# Хэндлер для обработки команды меню 5: показать
-# отсортированные заметки
+# Хэндлер для обработки команды меню 5:
+# показать отсортированные заметки
 @dp.message(Command(commands=["5"]), StateFilter(default_state))
 async def show_sorted_notes(message: Message):
-    keyboard = await kb.make_notes_as_inline_buttons(MODES["show_notes"])
+    keyboard = await kb.make_notes_as_inline_buttons(MODES["show_sorted_notes"])
     await message.answer(text=NOTIFICATION_TEXTS["sorted_notes"],
+                         reply_markup=keyboard)
+
+
+# Хэндлер для обработки команды меню 6:
+# показать заметки в исходном порядке
+@dp.message(Command(commands=["6"]), StateFilter(default_state))
+async def show_notes(message: Message):
+    keyboard = await kb.make_notes_as_inline_buttons(MODES["show_notes"])
+    await message.answer(text=NOTIFICATION_TEXTS["notes"],
                          reply_markup=keyboard)
 
 

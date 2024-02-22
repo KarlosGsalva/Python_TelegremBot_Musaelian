@@ -45,12 +45,17 @@ class AsyncNotesApp:
             print(self.NOTIFICATIONS["error"], e)
 
     # Создаем кнопки для демонстрации отсортированных заметок
-    async def sorted_notes_inline_buttons(self) -> list:
+    async def notes_in_inline_buttons(self, order=True) -> list:
         buttons_list: list[InlineKeyboardButton] = []
-        notes: list = await self.sort_notes()
-        for note in notes:
-            buttons_list.append(InlineKeyboardButton(text=f"Заметка {note[:-9]}",
-                                                     callback_data=f"show_note_{note}"))
+        if order:
+            notes: list = await self.sort_notes()
+            for note in notes:
+                buttons_list.append(InlineKeyboardButton(text=f"Заметка {note[:-9]}",
+                                                         callback_data=f"show_note_{note}"))
+        else:
+            for note in self.gather_all_notes():
+                buttons_list.append(InlineKeyboardButton(text=f"Заметка {note[:-9]}",
+                                                         callback_data=f"show_note_{note}"))
         return buttons_list
 
     async def sort_notes(self) -> list | None:
@@ -58,7 +63,6 @@ class AsyncNotesApp:
             notes: dict = await self._make_dict_for_sort_notes()
             sorted_notes = sorted(notes.items(), key=lambda note: note[1], reverse=True)
             sorted_note_names = [note[0] for note in sorted_notes]
-            print(sorted_note_names)
             return sorted_note_names
         except Exception as e:
             print("Произошла ошибка", e)
@@ -72,7 +76,6 @@ class AsyncNotesApp:
                 async with aiofiles.open(note, "r", encoding="utf-8") as note_file:
                     text_file = await note_file.read()
                     notes_len[note] = len(text_file)
-            print(notes_len.items())
             return notes_len
         except Exception as e:
             print("Произошла ошибка", e)
@@ -84,7 +87,8 @@ class AsyncNotesApp:
         try:
             if main_path is None:
                 main_path = path.dirname(__file__)
-            return [note for note in listdir(main_path) if note.endswith("note.txt")]
+            result = [note for note in listdir(main_path) if note.endswith("note.txt")]
+            return result
         except Exception as e:
             print("Произошла ошибка", e)
             return []

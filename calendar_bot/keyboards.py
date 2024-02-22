@@ -11,7 +11,7 @@ cancel_button = InlineKeyboardButton(text='отмена', callback_data='cancel'
 keyboard: list[list[InlineKeyboardButton]] = [[cancel_button]]
 cancel_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
-# Создаем экземпляр класса
+# Создаем экземпляр класса AsyncNotesApp
 async_notes_app = async_notesapp.AsyncNotesApp()
 
 
@@ -19,11 +19,14 @@ async def _make_callback_inline_buttons(mode: str) -> list | None:
     try:
         buttons: list[InlineKeyboardButton] = []
         files = await asyncio.to_thread(lambda: async_notes_app.gather_all_notes())
+        # Создаем кнопки в зависимости от mode'а
+        if mode == 'show_sorted_notes':
+            buttons = await async_notes_app.notes_in_inline_buttons()
+            return buttons
         if mode == 'show_notes':
-            buttons = await async_notes_app.sorted_notes_inline_buttons()
+            buttons = await async_notes_app.notes_in_inline_buttons(False)
             return buttons
         for note in files:
-            # Создаем кнопки в зависимости от mode'а
             if mode == 'delete':
                 button = InlineKeyboardButton(text=f"Удалить {note[:-9]}", callback_data=f"delete_{note}")
             elif mode == 'read':
