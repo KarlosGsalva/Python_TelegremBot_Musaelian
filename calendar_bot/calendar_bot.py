@@ -11,14 +11,21 @@ import secrets  # модуль с токеном бота
 
 BOT_TOKEN = secrets.BOT_TOKEN
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(storage=MemoryStorage())
+storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
 
 
-class FSMFillForm(StatesGroup):
+class FSMFillEvent(StatesGroup):
     fill_event_name = State()
     fill_event_date = State()
     fill_event_time = State()
     fill_event_details = State()
+
+
+class FSMMenuOptions(StatesGroup):
+    read_event = State()
+    edit_event = State()
+    delete_event = State()
 
 
 calendar_bot_app = ''
@@ -57,7 +64,22 @@ async def process_cancel_command(callback: CallbackQuery, state: FSMContext):
 async def create_event(message: Message, state: FSMContext):
     await message.answer(lx.WARNING_TEXTS["request_event_name"],
                          reply_markup=kb.cancel_markup)
-    await state.set_state(FSMFillForm.fill_event_name)
+    await state.set_state(FSMFillEvent.fill_event_name)
+
+
+# Забираем название события, переключаемся на введение даты
+@dp.message(StateFilter(FSMFillEvent.fill_event_name))
+async def process_event_name(message: Message, state: FSMContext):
+    await state.update_data(event_name=message.text)
+    await message.answer(lx.WARNING_TEXTS["request_event_date"])
+    # здесь функция с отсылкой календаря
+    await state.set_state(FSMFillEvent.fill_event_date)
+
+
+# Забираем дату события, переключаемся на введение времени
+@dp.message(StateFilter(FSMFillEvent.fill_event_date))
+async def process_event_date(message: Message, state: FSMContext):
+    await state.update_data(event_date=message.text)
 
 
 # Хэндлер для неотловленных сообщений
