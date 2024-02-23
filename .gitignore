@@ -6,4 +6,4 @@ venv/
 .vscode/
 /random_tasks.py
 /examples.py
-/make_notes_bot/secrets.py
+/secrets.py
