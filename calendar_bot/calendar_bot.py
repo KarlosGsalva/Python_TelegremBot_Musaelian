@@ -1,9 +1,11 @@
-from aiogram import Bot, Dispatcher
-from aiogram.types import BotCommand, Message
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import BotCommand, Message, CallbackQuery
 from aiogram.filters import Command, CommandStart, StateFilter
+from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State, default_state
 from aiogram.fsm.storage.memory import MemoryStorage
 
+import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
 import secrets  # модуль с токеном бота
 
@@ -34,6 +36,28 @@ async def set_main_menu(bot: bot):
 async def process_start_command(message: Message):
     await message.answer(lx.WARNING_TEXTS["hello"])
     await message.answer(lx.WARNING_TEXTS["show_menu"])
+
+
+# Обрабатываем команду cancel на дефолтном state
+@dp.message(Command(commands=["cancel"]), StateFilter(default_state))
+async def process_cancel_command(message: Message):
+    await message.answer(lx.WARNING_TEXTS["cancel"])
+
+
+# Обрабатываем callback cancel: отмены, на не дефолтном state
+@dp.callback_query(F.data == "cancel", ~StateFilter(default_state))
+async def process_cancel_command(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(text=lx.WARNING_TEXTS["exit"])
+    await callback.answer()
+    await state.clear()
+
+
+# Обрабатываем команду /1: Создать событие
+@dp.message(Command(commands=["1"]), StateFilter(default_state))
+async def create_event(message: Message, state: FSMContext):
+    await message.answer(lx.WARNING_TEXTS["request_event_name"],
+                         reply_markup=kb.cancel_markup)
+    await state.set_state(FSMFillForm.fill_event_name)
 
 
 # Хэндлер для неотловленных сообщений
