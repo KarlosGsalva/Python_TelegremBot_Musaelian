@@ -11,6 +11,7 @@ WARNING_TEXTS = {
         "show_menu": "\n".join(f"{com}: {des}" for com, des in MENU.items()),
         "request_event_name": "Пожалуйста, введите название нового события:",
         "request_event_date": "Пожалуйста выберите дату события",
+        "request_event_time": "Пожалуйста введите время события:",
         "exit": "Вы вышли из приложения\n\n"
                 "Чтобы снова приступить к работе введите команду /start\n"
                 "или выберите пункт меню.",
