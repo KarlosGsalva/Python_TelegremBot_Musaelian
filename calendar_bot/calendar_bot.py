@@ -10,7 +10,7 @@ from aiogram_dialog import DialogManager, Window, Dialog, setup_dialogs
 from aiogram_dialog.widgets.kbd import Button, Calendar
 from aiogram_dialog.widgets.text import Const
 
-# from calendar_async_back import on_date_selected  # модуль с бэкэндом
+from calendar_async_back import write_event_in_json_file  # модуль с бэкэндом
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
 import secrets  # модуль с токеном бота
@@ -41,15 +41,18 @@ async def on_date_selected(callback: CallbackQuery, widget,
     timestamp = int(callback.data[callback.data.find(':') + 1:])
     manager.dialog_data['event_date'] = date.fromtimestamp(timestamp)
     date_for_show = manager.dialog_data['event_date'].strftime('%d.%m.%Y')
+
     key = StorageKey(bot_id=callback.bot.id,
                      chat_id=callback.message.chat.id,
                      user_id=callback.from_user.id)
     state = FSMContext(storage=storage, key=key)
+    await state.update_data(event_date=date_for_show)
     await manager.done()
     # Ответ пользователю с выбранной датой
     await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(f"Вы выбрали: {date_for_show}")
-    await callback.message.answer(lx.WARNING_TEXTS["request_event_time"])
+    await callback.message.answer(lx.WARNING_TEXTS["request_event_time"],
+                                  reply_markup=kb.make_inline_keyboard())
     await state.set_state(FSMFillEvent.fill_event_time)
 
 # Создание виджета календаря
@@ -114,11 +117,32 @@ async def process_event_name(message: Message, state: FSMContext,
     await dialog_manager.start(FSMFillEvent.fill_event_date)
 
 
-# Забираем дату события, переключаемся на введение времени
-@dp.message(StateFilter(FSMFillEvent.fill_event_time))
-async def process_event_date(message: Message, state: FSMContext):
-    await state.update_data(event_time=message.text)
+# Забираем дату события, переключаемся на введение details
+@dp.callback_query(F.data.startswith("time"), StateFilter(FSMFillEvent.fill_event_time))
+async def process_event_date(callback: CallbackQuery, state: FSMContext):
+    event_time = callback.data[5:]
+    await callback.message.answer(f"Вы выбрали {event_time} временем события.")
+    await state.update_data(event_time=event_time)
+    await callback.message.answer(lx.WARNING_TEXTS["request_event_details"])
     await state.set_state(FSMFillEvent.fill_event_details)
+
+
+# Забираем описание и записываем событие в файл
+@dp.message(StateFilter(FSMFillEvent.fill_event_details))
+async def write_event_details(message: Message, state: FSMContext):
+    await state.update_data(details=message.text)
+
+    # Собираем данные из state
+    event_data = await state.get_data()
+    event_name = event_data["event_name"]
+    event_date = event_data["event_date"]
+    event_time = event_data["event_time"]
+    event_details = event_data["details"]
+
+    # Записываем в файл
+    await write_event_in_json_file(event_name, event_date, event_time, event_details)
+    await message.answer(lx.WARNING_TEXTS["event_made"])
+    await state.clear()
 
 
 # Хэндлер для неотловленных сообщений
