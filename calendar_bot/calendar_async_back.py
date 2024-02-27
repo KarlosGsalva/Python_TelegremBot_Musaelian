@@ -3,6 +3,7 @@ import aiofiles as aiof
 
 from datetime import date
 import json
+import pathlib
 
 
 # Функция записи события в текстовый файл
@@ -39,3 +40,20 @@ async def write_event_in_json_file(event_name: str,
         await json_file.write(json.dumps(dump_object, ensure_ascii=False, indent=4))
 
 
+# Чтение имеющихся событий в указанной или базовой директории
+def gather_having_events(path_for_search=None):
+    if path_for_search is None:
+        path_for_search = pathlib.Path(__file__).parent
+    else:
+        path_for_search = pathlib.Path(path_for_search)
+
+    events: list = [event.name for event in path_for_search.glob("*.json")]
+    return events
+
+
+# Читаем запрошенное событие из файла
+async def read_event(event_name: str) -> dict:
+    async with aiof.open(f"{event_name}", mode="r", encoding="utf-8") as json_file:
+        content = await json_file.read()
+        event_data = json.loads(content)
+    return event_data

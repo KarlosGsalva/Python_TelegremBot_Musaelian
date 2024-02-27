@@ -10,7 +10,7 @@ from aiogram_dialog import DialogManager, Window, Dialog, setup_dialogs
 from aiogram_dialog.widgets.kbd import Button, Calendar
 from aiogram_dialog.widgets.text import Const
 
-from calendar_async_back import write_event_in_json_file  # модуль с бэкэндом
+from calendar_async_back import write_event_in_json_file, read_event  # модуль с бэкэндом
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
 import secrets  # модуль с токеном бота
@@ -55,9 +55,9 @@ async def on_date_selected(callback: CallbackQuery, widget,
                                   reply_markup=kb.make_inline_keyboard())
     await state.set_state(FSMFillEvent.fill_event_time)
 
+
 # Создание виджета календаря
 calendar = Calendar(id='calendar', on_click=on_date_selected)
-
 
 # calendar_bot_app = ''
 
@@ -145,13 +145,35 @@ async def write_event_details(message: Message, state: FSMContext):
     await state.clear()
 
 
+@dp.message(Command(commands=["2"]), StateFilter(default_state))
+async def show_event(message: Message, state: FSMContext):
+    # Выбираем событие инлайн кнопкой
+    keyboard = kb.make_events_as_buttons()
+    await message.answer(text=lx.WARNING_TEXTS["request_event_for_show"],
+                         reply_markup=keyboard)
+    # Переводимся в состояние чтения заметки
+    await state.set_state(FSMMenuOptions.read_event)
+
+
+@dp.callback_query(StateFilter(FSMMenuOptions.read_event))
+async def show_requested_event(callback: CallbackQuery, state: FSMContext):
+    event_for_read = callback.data
+    event_data = await read_event(event_for_read)
+    event_data = "\n".join(f"{nam}: {val}"
+                           for name, value in event_data.items()
+                           for nam, val in value.items())
+    await callback.answer()  # Подтверждаем получение callback
+    await callback.message.answer(lx.WARNING_TEXTS["show_event"])
+    await callback.message.answer(event_data)
+    await state.clear()
+
+
 # Хэндлер для неотловленных сообщений
 @dp.message(StateFilter(default_state))
 async def echo(message: Message):
     await message.reply(text="Извините, я вас не понимать")
 
+
 if __name__ == '__main__':
     dp.startup.register(set_main_menu)
     dp.run_polling(bot)
-
-
