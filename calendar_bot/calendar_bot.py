@@ -10,7 +10,10 @@ from aiogram_dialog import DialogManager, Window, Dialog, setup_dialogs
 from aiogram_dialog.widgets.kbd import Button, Calendar
 from aiogram_dialog.widgets.text import Const
 
-from calendar_async_back import write_event_in_json_file, read_event  # модуль с бэкэндом
+from calendar_async_back import (write_event_in_json_file,  # модуль с бэкэндом
+                                 read_event,
+                                 format_event_data)
+
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
 import secrets  # модуль с токеном бота
@@ -54,6 +57,7 @@ async def on_date_selected(callback: CallbackQuery, widget,
     await callback.message.answer(lx.WARNING_TEXTS["request_event_time"],
                                   reply_markup=kb.make_inline_keyboard())
     await state.set_state(FSMFillEvent.fill_event_time)
+    await callback.answer()  # подтверждаем получение callback
 
 
 # Создание виджета календаря
@@ -159,12 +163,9 @@ async def show_event(message: Message, state: FSMContext):
 async def show_requested_event(callback: CallbackQuery, state: FSMContext):
     event_for_read = callback.data
     event_data = await read_event(event_for_read)
-    event_data = "\n".join(f"{nam}: {val}"
-                           for name, value in event_data.items()
-                           for nam, val in value.items())
     await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(lx.WARNING_TEXTS["show_event"])
-    await callback.message.answer(event_data)
+    await callback.message.answer(format_event_data(event_data))
     await state.clear()
 
 

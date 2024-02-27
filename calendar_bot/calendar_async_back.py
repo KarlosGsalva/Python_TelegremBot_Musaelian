@@ -57,3 +57,10 @@ async def read_event(event_name: str) -> dict:
         content = await json_file.read()
         event_data = json.loads(content)
     return event_data
+
+
+# Форматируем словарь для вывода пользователю
+def format_event_data(event_data: dict) -> str:
+    event_name = ''.join(event_data.keys())
+    event_details = "\n".join(f"{name}: {text}" for name, text in event_data[event_name].items())
+    return event_name + "\n" + event_details
