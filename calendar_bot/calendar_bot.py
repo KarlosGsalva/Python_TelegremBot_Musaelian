@@ -3,65 +3,27 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import BotCommand, Message, CallbackQuery
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State, default_state
-from aiogram.fsm.storage.base import StorageKey
-from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.state import default_state
 from aiogram_dialog import DialogManager, Window, Dialog, setup_dialogs
-from aiogram_dialog.widgets.kbd import Button, Calendar
+from aiogram_dialog.widgets.kbd import Calendar
 from aiogram_dialog.widgets.text import Const
 
 from calendar_async_back import (write_event_in_json_file,  # модуль с бэкэндом
                                  read_event,
                                  format_event_data)
-
+from dialog_funcs import select_date
+from states import FSMFillEvent, FSMMenuOptions, storage
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
 import secrets  # модуль с токеном бота
-from datetime import date
 
 BOT_TOKEN = secrets.BOT_TOKEN
 bot = Bot(token=BOT_TOKEN)
-storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
 
-class FSMFillEvent(StatesGroup):
-    fill_event_name = State()
-    fill_event_date = State()
-    fill_event_time = State()
-    fill_event_details = State()
-
-
-class FSMMenuOptions(StatesGroup):
-    read_event = State()
-    edit_event = State()
-    delete_event = State()
-
-
-async def on_date_selected(callback: CallbackQuery, widget,
-                           manager: DialogManager,
-                           timestamp: date):
-    timestamp = int(callback.data[callback.data.find(':') + 1:])
-    manager.dialog_data['event_date'] = date.fromtimestamp(timestamp)
-    date_for_show = manager.dialog_data['event_date'].strftime('%d.%m.%Y')
-
-    key = StorageKey(bot_id=callback.bot.id,
-                     chat_id=callback.message.chat.id,
-                     user_id=callback.from_user.id)
-    state = FSMContext(storage=storage, key=key)
-    await state.update_data(event_date=date_for_show)
-    await manager.done()
-    # Ответ пользователю с выбранной датой
-    await callback.answer()  # Подтверждаем получение callback
-    await callback.message.answer(f"Вы выбрали: {date_for_show}")
-    await callback.message.answer(lx.WARNING_TEXTS["request_event_time"],
-                                  reply_markup=kb.make_inline_keyboard())
-    await state.set_state(FSMFillEvent.fill_event_time)
-    await callback.answer()  # подтверждаем получение callback
-
-
 # Создание виджета календаря
-calendar = Calendar(id='calendar', on_click=on_date_selected)
+calendar = Calendar(id='calendar', on_click=select_date)
 
 # calendar_bot_app = ''
 
@@ -167,6 +129,26 @@ async def show_requested_event(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(lx.WARNING_TEXTS["show_event"])
     await callback.message.answer(format_event_data(event_data))
     await state.clear()
+
+
+@dp.message(Command(commands=["3"]), StateFilter(default_state))
+async def choose_event_for_edit(message: Message, state: FSMContext):
+    keyboard = kb.make_events_as_buttons()
+    await message.answer(text=lx.WARNING_TEXTS["request_event_for_edit"],
+                         reply_markup=keyboard)
+    await state.set_state(FSMMenuOptions.choose_event)
+
+
+@dp.callback_query(StateFilter(FSMMenuOptions.choose_event))
+async def choose_event_point_for_edit(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(text=lx.WARNING_TEXTS["request_event_point_for_edit"],
+                                  reply_markup=kb.make_event_point_as_buttons())
+    await state.set_state(FSMMenuOptions.choose_event_point)
+
+
+@dp.callback_query(StateFilter(FSMMenuOptions.choose_event_point))
+async def change_event_point(callback: CallbackQuery, state: FSMContext):
+    ...
 
 
 # Хэндлер для неотловленных сообщений

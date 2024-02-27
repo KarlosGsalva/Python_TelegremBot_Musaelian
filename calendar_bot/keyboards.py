@@ -34,3 +34,12 @@ def make_events_as_buttons():
                for event_name in gather_having_events()]
     buttons.append(cancel_button)
     return make_inline_keyboard(buttons, width=1)
+
+
+# Создаем пункты события как кнопки
+def make_event_point_as_buttons():
+    buttons = [InlineKeyboardButton(text="Дата события", callback_data="change_event_date"),
+               InlineKeyboardButton(text="Время события", callback_data="change_event_time"),
+               InlineKeyboardButton(text="Описание события", callback_data="change_event_details"),
+               cancel_button]
+    return make_inline_keyboard(buttons, width=1)
