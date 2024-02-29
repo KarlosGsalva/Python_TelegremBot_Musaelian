@@ -37,9 +37,9 @@ def make_events_as_buttons():
 
 
 # Создаем пункты события как кнопки
-def make_event_point_as_buttons():
-    buttons = [InlineKeyboardButton(text="Дата события", callback_data="change_event_date"),
-               InlineKeyboardButton(text="Время события", callback_data="change_event_time"),
-               InlineKeyboardButton(text="Описание события", callback_data="change_event_details"),
+def make_event_point_as_buttons():  # надо передать сюда или от сюда название события
+    buttons = [InlineKeyboardButton(text="Дата события", callback_data=f"change_event_date"),
+               InlineKeyboardButton(text="Время события", callback_data=f"change_event_time"),
+               InlineKeyboardButton(text="Описание события", callback_data=f"change_event_details"),
                cancel_button]
     return make_inline_keyboard(buttons, width=1)

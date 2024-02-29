@@ -5,35 +5,24 @@ from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram_dialog import DialogManager, Window, Dialog, setup_dialogs
-from aiogram_dialog.widgets.kbd import Calendar
-from aiogram_dialog.widgets.text import Const
 
 from calendar_async_back import (write_event_in_json_file,  # модуль с бэкэндом
-                                 read_event,
+                                 read_event, change_event_point,
                                  format_event_data)
-from dialog_funcs import select_date
-from states import FSMFillEvent, FSMMenuOptions, storage
+from dialog_funcs import set_calendar_window, edit_calendar_window, _make_key
+from states import FSMFillEvent, FSMMenuOptions, dp, storage
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
 import secrets  # модуль с токеном бота
 
 BOT_TOKEN = secrets.BOT_TOKEN
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(storage=storage)
-
-
-# Создание виджета календаря
-calendar = Calendar(id='calendar', on_click=select_date)
-
-# calendar_bot_app = ''
-
-# Пишем окно календаря
-calendar_window = Window(Const(lx.WARNING_TEXTS["request_event_date"]),
-                         calendar, state=FSMFillEvent.fill_event_date)
 
 # Регистрируем окно в диалоге, диалог в диспетчере
-dialog = Dialog(calendar_window)
-dp.include_router(dialog)
+dialog_create_state = Dialog(set_calendar_window)
+dialog_edit_state = Dialog(edit_calendar_window)
+dp.include_router(dialog_create_state)
+dp.include_router(dialog_edit_state)
 # Инициализация DialogManager
 setup_dialogs(dp)
 
@@ -141,14 +130,18 @@ async def choose_event_for_edit(message: Message, state: FSMContext):
 
 @dp.callback_query(StateFilter(FSMMenuOptions.choose_event))
 async def choose_event_point_for_edit(callback: CallbackQuery, state: FSMContext):
+    event_name = callback.data[:-5]
+    await state.update_data(event_name=event_name)
     await callback.message.answer(text=lx.WARNING_TEXTS["request_event_point_for_edit"],
                                   reply_markup=kb.make_event_point_as_buttons())
+    await callback.answer()
     await state.set_state(FSMMenuOptions.choose_event_point)
 
 
-@dp.callback_query(StateFilter(FSMMenuOptions.choose_event_point))
-async def change_event_point(callback: CallbackQuery, state: FSMContext):
-    ...
+@dp.callback_query(F.data == "change_event_date", StateFilter(FSMMenuOptions.choose_event_point))
+async def get_new_event_date(callback: CallbackQuery, state: FSMContext,
+                             dialog_manager: DialogManager):
+    await dialog_manager.start(FSMMenuOptions.edit_event_date)
 
 
 # Хэндлер для неотловленных сообщений

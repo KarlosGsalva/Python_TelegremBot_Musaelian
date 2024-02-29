@@ -1,7 +1,9 @@
+from aiogram import Dispatcher
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.storage.memory import MemoryStorage
 
 storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
 
 
 class FSMFillEvent(StatesGroup):
@@ -16,4 +18,6 @@ class FSMMenuOptions(StatesGroup):
     edit_event = State()
     choose_event = State()
     choose_event_point = State()
+    edit_event_date = State()
+    set_new_event_date = State()
     delete_event = State()

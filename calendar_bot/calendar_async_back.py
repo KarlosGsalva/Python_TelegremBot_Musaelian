@@ -1,4 +1,3 @@
-import aiogram as aio
 import aiofiles as aiof
 
 from datetime import date
@@ -64,3 +63,28 @@ def format_event_data(event_data: dict) -> str:
     event_name = ''.join(event_data.keys())
     event_details = "\n".join(f"{name}: {text}" for name, text in event_data[event_name].items())
     return event_name + "\n" + event_details
+
+
+# Изменяем выбранный пункт события
+async def change_event_point(event_name: str, event_point: str, new_data: str) -> None:
+    async with aiof.open(f"{event_name}.json", mode="r", encoding="utf-8") as old_event:
+        old_data = await old_event.read()
+        deserialised_data = json.loads(old_data)
+        print(deserialised_data)
+
+    deserialised_data[event_name][event_point] = new_data
+
+    async with aiof.open(f"{event_name}.json", mode="w", encoding="utf-8") as new_event:
+        await new_event.write(json.dumps(deserialised_data))
+
+
+
+
+
+
+
+
+
+
+
+
