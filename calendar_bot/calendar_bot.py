@@ -10,7 +10,7 @@ from calendar_async_back import (write_event_in_json_file,  # модуль с б
                                  read_event, change_event_point,
                                  format_event_data)
 from dialog_funcs import set_calendar_window, edit_calendar_window, _make_key
-from states import FSMFillEvent, FSMMenuOptions, dp, storage
+from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp, storage
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
 import secrets  # модуль с токеном бота
@@ -60,30 +60,30 @@ async def process_cancel_command(callback: CallbackQuery, state: FSMContext):
 async def create_event(message: Message, state: FSMContext):
     await message.answer(lx.WARNING_TEXTS["request_event_name"],
                          reply_markup=kb.cancel_markup)
-    await state.set_state(FSMFillEvent.fill_event_name)
+    await state.set_state(FSMCreateEvent.fill_event_name)
 
 
 # Забираем название события, переключаемся на введение даты
-@dp.message(StateFilter(FSMFillEvent.fill_event_name))
+@dp.message(StateFilter(FSMCreateEvent.fill_event_name))
 async def process_event_name(message: Message, state: FSMContext,
                              dialog_manager: DialogManager):
     await state.update_data(event_name=message.text)
     # отправляем календарь
-    await dialog_manager.start(FSMFillEvent.fill_event_date)
+    await dialog_manager.start(FSMCreateEvent.fill_event_date)
 
 
 # Забираем дату события, переключаемся на введение details
-@dp.callback_query(F.data.startswith("time"), StateFilter(FSMFillEvent.fill_event_time))
+@dp.callback_query(F.data.startswith("time"), StateFilter(FSMCreateEvent.fill_event_time))
 async def process_event_date(callback: CallbackQuery, state: FSMContext):
     event_time = callback.data[5:]
     await callback.message.answer(f"Вы выбрали {event_time} временем события.")
     await state.update_data(event_time=event_time)
     await callback.message.answer(lx.WARNING_TEXTS["request_event_details"])
-    await state.set_state(FSMFillEvent.fill_event_details)
+    await state.set_state(FSMCreateEvent.fill_event_details)
 
 
 # Забираем описание и записываем событие в файл
-@dp.message(StateFilter(FSMFillEvent.fill_event_details))
+@dp.message(StateFilter(FSMCreateEvent.fill_event_details))
 async def write_event_details(message: Message, state: FSMContext):
     await state.update_data(details=message.text)
 
@@ -125,23 +125,51 @@ async def choose_event_for_edit(message: Message, state: FSMContext):
     keyboard = kb.make_events_as_buttons()
     await message.answer(text=lx.WARNING_TEXTS["request_event_for_edit"],
                          reply_markup=keyboard)
-    await state.set_state(FSMMenuOptions.choose_event)
+    await state.set_state(FSMEditEvent.choose_event)
 
 
-@dp.callback_query(StateFilter(FSMMenuOptions.choose_event))
+@dp.callback_query(StateFilter(FSMEditEvent.choose_event))
 async def choose_event_point_for_edit(callback: CallbackQuery, state: FSMContext):
     event_name = callback.data[:-5]
     await state.update_data(event_name=event_name)
     await callback.message.answer(text=lx.WARNING_TEXTS["request_event_point_for_edit"],
                                   reply_markup=kb.make_event_point_as_buttons())
     await callback.answer()
-    await state.set_state(FSMMenuOptions.choose_event_point)
+    await state.set_state(FSMEditEvent.choose_event_point)
 
 
-@dp.callback_query(F.data == "change_event_date", StateFilter(FSMMenuOptions.choose_event_point))
+@dp.callback_query(F.data == "change_event_date", StateFilter(FSMEditEvent.choose_event_point))
 async def get_new_event_date(callback: CallbackQuery, state: FSMContext,
                              dialog_manager: DialogManager):
-    await dialog_manager.start(FSMMenuOptions.edit_event_date)
+    await dialog_manager.start(FSMEditEvent.edit_event_date)
+
+
+@dp.callback_query(F.data == "change_event_time", StateFilter(FSMEditEvent.choose_event_point))
+async def get_new_event_time(callback: CallbackQuery, state: FSMContext):
+    keyboard = kb.make_time_inline_keyboard()
+    await callback.message.answer(text=lx.WARNING_TEXTS["request_new_event_time"],
+                                  reply_markup=keyboard)
+    await state.set_state(FSMEditEvent.edit_event_time)
+
+
+@dp.callback_query(F.data.startswith("time"), StateFilter(FSMEditEvent.edit_event_time))
+async def edit_event_time(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()  # подтверждаем получение callback с time
+
+    # Пишем новое время в storage
+    new_event_time = callback.data[5:]
+    await state.update_data(event_time=new_event_time)
+
+    # Сохраняем данные из state
+    user_data = await state.get_data()
+
+    # Изменяем событие
+    await change_event_point(user_data["event_name"], "Время события",
+                             user_data["event_time"])
+
+    # Уведомляем об успешном изменении данных
+    await callback.message.answer(lx.WARNING_TEXTS["event_time_edited"])
+    await state.clear()
 
 
 # Хэндлер для неотловленных сообщений

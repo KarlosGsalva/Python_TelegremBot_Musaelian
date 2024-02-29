@@ -13,14 +13,14 @@ cancel_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 # Создаем кнопки для выбора времени
 def time_keyboard():
-    times = [f"{hour:02d}:{minute:02d}" for hour in range(24) for minute in (0, 30)]
+    times = [f"{hour:02d}:{minute:02d}" for hour in range(24) for minute in (0, 15, 30, 45)]
     buttons = [InlineKeyboardButton(text=time, callback_data=f"time:{time}") for time in times]
     buttons.append(cancel_button)
     return buttons
 
 
 # Создаем клавиатуру для выбора времени
-def make_inline_keyboard(buttons=None, width=4):
+def make_time_inline_keyboard(buttons=None, width=4):
     ikb_builder = InlineKeyboardBuilder()
     if buttons is None:
         buttons = time_keyboard()
@@ -33,7 +33,7 @@ def make_events_as_buttons():
     buttons = [InlineKeyboardButton(text=event_name[:-5], callback_data=f"{event_name}")
                for event_name in gather_having_events()]
     buttons.append(cancel_button)
-    return make_inline_keyboard(buttons, width=1)
+    return make_time_inline_keyboard(buttons, width=1)
 
 
 # Создаем пункты события как кнопки
@@ -42,4 +42,4 @@ def make_event_point_as_buttons():  # надо передать сюда или 
                InlineKeyboardButton(text="Время события", callback_data=f"change_event_time"),
                InlineKeyboardButton(text="Описание события", callback_data=f"change_event_details"),
                cancel_button]
-    return make_inline_keyboard(buttons, width=1)
+    return make_time_inline_keyboard(buttons, width=1)

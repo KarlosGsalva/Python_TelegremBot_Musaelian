@@ -6,18 +6,21 @@ storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
 
-class FSMFillEvent(StatesGroup):
+class FSMCreateEvent(StatesGroup):
     fill_event_name = State()
     fill_event_date = State()
     fill_event_time = State()
     fill_event_details = State()
 
 
-class FSMMenuOptions(StatesGroup):
-    read_event = State()
-    edit_event = State()
+class FSMEditEvent(StatesGroup):
     choose_event = State()
     choose_event_point = State()
     edit_event_date = State()
-    set_new_event_date = State()
+    edit_event_time = State()
+    edit_event_details = State()
+
+
+class FSMMenuOptions(StatesGroup):
+    read_event = State()
     delete_event = State()

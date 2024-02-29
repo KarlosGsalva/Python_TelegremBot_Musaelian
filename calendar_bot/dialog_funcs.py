@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.kbd import Calendar, ManagedCalendar
 from aiogram_dialog.widgets.text import Const
 from aiogram_dialog import DialogManager, Window, Dialog, setup_dialogs
 
-from states import FSMMenuOptions, FSMFillEvent, storage, dp
+from states import FSMEditEvent, FSMCreateEvent, storage, dp
 from calendar_async_back import change_event_point
 import lexicon as lx
 import keyboards as kb
@@ -40,8 +40,8 @@ async def select_date(callback: CallbackQuery, widget: ManagedCalendar,
 
     # Запрашиваем время события, выдаем клавиатуру, меняем state
     await callback.message.answer(lx.WARNING_TEXTS["request_event_time"],
-                                  reply_markup=kb.make_inline_keyboard())
-    await state.set_state(FSMFillEvent.fill_event_time)
+                                  reply_markup=kb.make_time_inline_keyboard())
+    await state.set_state(FSMCreateEvent.fill_event_time)
 
 
 async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
@@ -55,13 +55,11 @@ async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
 
     await state.update_data(event_date=date_for_show)
     user_data = await state.get_data()
-    print(user_data.items())
     await manager.done()
 
     # Ответ пользователю с выбранной датой
     await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(f"Вы выбрали новую дату: {date_for_show}")
-    await state.set_state(FSMMenuOptions.set_new_event_date)
 
     # Вносим изменения в событие
     await change_event_point(user_data["event_name"], "Дата события",
@@ -77,8 +75,8 @@ edit_calendar_date = Calendar(id='edit_calendar', on_click=edit_date)
 
 # Создаем окно календаря
 set_calendar_window = Window(Const(lx.WARNING_TEXTS["request_event_date"]),
-                             set_calendar_date, state=FSMFillEvent.fill_event_date)
+                             set_calendar_date, state=FSMCreateEvent.fill_event_date)
 
 edit_calendar_window = Window(Const(lx.WARNING_TEXTS["request_event_date"]),
-                              edit_calendar_date, state=FSMMenuOptions.edit_event_date)
+                              edit_calendar_date, state=FSMEditEvent.edit_event_date)
 
