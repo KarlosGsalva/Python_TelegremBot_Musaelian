@@ -14,59 +14,75 @@ import keyboards as kb
 
 
 def _make_key(callback: CallbackQuery):
-    key = StorageKey(bot_id=callback.bot.id,
-                     chat_id=callback.message.chat.id,
-                     user_id=callback.from_user.id)
-    return key
+    try:
+        key = StorageKey(bot_id=callback.bot.id,
+                         chat_id=callback.message.chat.id,
+                         user_id=callback.from_user.id)
+        return key
+    except Exception as e:
+        print(f"Произошла ошибка{e}")
+        return []
 
 
 def _get_date_from_timestamp(callback: CallbackQuery):
-    return int(callback.data[callback.data.find(':') + 1:])
+    try:
+        return int(callback.data[callback.data.find(':') + 1:])
+    except Exception as e:
+        print(f"Произошла ошибка{e}")
+        return []
 
 
 async def select_date(callback: CallbackQuery, widget: ManagedCalendar,
                       manager: DialogManager, timestamp: date):
-    date_for_show = timestamp.strftime('%d.%m.%Y')
+    try:
+        date_for_show = timestamp.strftime('%d.%m.%Y')
 
-    # Инициализируем контекст для сохранения даты и внесения изменений
-    key = _make_key(callback)
-    state = FSMContext(storage=storage, key=key)
-    await state.update_data(event_date=date_for_show)
-    await manager.done()
+        # Инициализируем контекст для сохранения даты и внесения изменений
+        key = _make_key(callback)
+        state = FSMContext(storage=storage, key=key)
+        await state.update_data(event_date=date_for_show)
+        await manager.done()
 
-    # Ответ пользователю с выбранной датой
-    await callback.answer()  # Подтверждаем получение callback
-    await callback.message.answer(f"Вы выбрали: {date_for_show}")
+        # Ответ пользователю с выбранной датой
+        await callback.answer()  # Подтверждаем получение callback
+        await callback.message.answer(f"Вы выбрали: {date_for_show}")
 
-    # Запрашиваем время события, выдаем клавиатуру, меняем state
-    await callback.message.answer(lx.WARNING_TEXTS["request_event_time"],
-                                  reply_markup=kb.make_time_inline_keyboard())
-    await state.set_state(FSMCreateEvent.fill_event_time)
+        # Запрашиваем время события, выдаем клавиатуру, меняем state
+        await callback.message.answer(lx.WARNING_TEXTS["request_event_time"],
+                                      reply_markup=kb.make_time_inline_keyboard())
+        await state.set_state(FSMCreateEvent.fill_event_time)
+    except Exception as e:
+        print(f"Произошла ошибка{e}")
+        return []
 
 
 async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
                     manager: DialogManager, timestamp: date):
-    date_for_show = timestamp.strftime('%d.%m.%Y')
+    try:
+        date_for_show = timestamp.strftime('%d.%m.%Y')
 
-    # Инициализируем контекст для сохранения даты и внесения изменений
-    key = _make_key(callback)
-    state = FSMContext(storage=storage, key=key)
+        # Инициализируем контекст для сохранения даты и внесения изменений
+        key = _make_key(callback)
+        state = FSMContext(storage=storage, key=key)
 
-    await state.update_data(event_date=date_for_show)
-    user_data = await state.get_data()
-    await manager.done()
+        await state.update_data(event_date=date_for_show)
+        user_data = await state.get_data()
+        await manager.done()
 
-    # Ответ пользователю с выбранной датой
-    await callback.answer()  # Подтверждаем получение callback
-    await callback.message.answer(f"Вы выбрали новую дату: {date_for_show}")
+        # Ответ пользователю с выбранной датой
+        await callback.answer()  # Подтверждаем получение callback
+        await callback.message.answer(f"Вы выбрали новую дату: {date_for_show}")
 
-    # Вносим изменения в событие
-    await change_event_point(user_data["event_name"], "Дата события",
-                             user_data["event_date"])
+        # Вносим изменения в событие
+        await change_event_point(user_data["event_name"], "Дата события",
+                                 user_data["event_date"])
 
-    # Оповещаем о внесении изменений, обнуляем state
-    await callback.message.answer(lx.WARNING_TEXTS["event_date_edited"])
-    await state.clear()
+        # Оповещаем о внесении изменений, обнуляем state
+        await callback.message.answer(lx.WARNING_TEXTS["event_date_edited"])
+        await state.clear()
+    except Exception as e:
+        print(f"Произошла ошибка{e}")
+        return []
 
 # Создание виджета календаря
 set_calendar_date = Calendar(id='set_calendar', on_click=select_date)
