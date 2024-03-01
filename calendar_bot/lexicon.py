@@ -20,6 +20,8 @@ WARNING_TEXTS = {
         "event_date_edited": "Дата события изменена.",
         "request_new_event_time": "Выберите или введите новое время события:",
         "event_time_edited": "Время события изменено.",
+        "request_new_event_details": "Введите новое описание события:",
+        "event_details_edited": "Описание события изменено.",
         "show_event": "Пожалуйста, данные события",
         "event_made": "Событие создано.",
         "exit": "Вы вышли из приложения\n\n"

@@ -70,7 +70,6 @@ async def change_event_point(event_name: str, event_point: str, new_data: str) -
     async with aiof.open(f"{event_name}.json", mode="r", encoding="utf-8") as old_event:
         old_data = await old_event.read()
         deserialised_data = json.loads(old_data)
-        print(deserialised_data)
 
     deserialised_data[event_name][event_point] = new_data
 

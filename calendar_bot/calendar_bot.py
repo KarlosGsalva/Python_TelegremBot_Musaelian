@@ -75,6 +75,7 @@ async def process_event_name(message: Message, state: FSMContext,
 # Забираем дату события, переключаемся на введение details
 @dp.callback_query(F.data.startswith("time"), StateFilter(FSMCreateEvent.fill_event_time))
 async def process_event_date(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()  # подтверждаем получение callback с time
     event_time = callback.data[5:]
     await callback.message.answer(f"Вы выбрали {event_time} временем события.")
     await state.update_data(event_time=event_time)
@@ -155,20 +156,38 @@ async def get_new_event_time(callback: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data.startswith("time"), StateFilter(FSMEditEvent.edit_event_time))
 async def edit_event_time(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # подтверждаем получение callback с time
-
-    # Пишем новое время в storage
-    new_event_time = callback.data[5:]
-    await state.update_data(event_time=new_event_time)
+    new_event_time = callback.data[5:]  # сохраняем время без "time"
 
     # Сохраняем данные из state
     user_data = await state.get_data()
 
     # Изменяем событие
     await change_event_point(user_data["event_name"], "Время события",
-                             user_data["event_time"])
+                             new_event_time)
 
     # Уведомляем об успешном изменении данных
+    await callback.message.answer(text=f"Новое время события: {new_event_time}")
     await callback.message.answer(lx.WARNING_TEXTS["event_time_edited"])
+    await state.clear()
+
+
+@dp.callback_query(F.data == "change_event_details", StateFilter(FSMEditEvent.choose_event_point))
+async def request_new_event_details(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(lx.WARNING_TEXTS["request_new_event_details"])
+    await state.set_state(FSMEditEvent.edit_event_details)
+
+
+@dp.message(StateFilter(FSMEditEvent.edit_event_details))
+async def set_new_event_details(message: Message, state: FSMContext):
+    new_event_details = message.text
+
+    user_data = await state.get_data()
+
+    await change_event_point(user_data["event_name"], "Описание события",
+                             new_event_details)
+
+    await message.answer(text=f"Новое описание события: {new_event_details}")
+    await message.answer(lx.WARNING_TEXTS["event_details_edited"])
     await state.clear()
 
 
