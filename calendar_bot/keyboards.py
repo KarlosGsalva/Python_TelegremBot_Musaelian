@@ -12,7 +12,7 @@ cancel_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
 # Создаем кнопки для выбора времени
-def time_keyboard():
+def time_keyboard() -> list[InlineKeyboardButton]:
     try:
         times = [f"{hour:02d}:{minute:02d}" for hour in range(24) for minute in (0, 15, 30, 45)]
         buttons = [InlineKeyboardButton(text=time, callback_data=f"time:{time}") for time in times]
@@ -24,7 +24,7 @@ def time_keyboard():
 
 
 # Создаем клавиатуру для выбора времени
-def make_time_inline_keyboard(buttons=None, width=4):
+def make_time_inline_keyboard(buttons=None, width=4) -> InlineKeyboardMarkup | None:
     try:
         ikb_builder = InlineKeyboardBuilder()
         if buttons is None:
@@ -33,11 +33,11 @@ def make_time_inline_keyboard(buttons=None, width=4):
         return ikb_builder.as_markup()
     except Exception as e:
         print(f"Произошла ошибка{e}")
-        return []
+        return None
 
 
 # Создаем события как кнопки
-def make_events_as_buttons():
+def make_events_as_buttons() -> InlineKeyboardMarkup | None:
     try:
         buttons = [InlineKeyboardButton(text=event_name[:-5], callback_data=f"{event_name}")
                    for event_name in gather_having_events()]
@@ -45,11 +45,11 @@ def make_events_as_buttons():
         return make_time_inline_keyboard(buttons, width=1)
     except Exception as e:
         print(f"Произошла ошибка{e}")
-        return []
+        return None
 
 
 # Создаем пункты события как кнопки
-def make_event_point_as_buttons():  # надо передать сюда или от сюда название события
+def make_event_point_as_buttons() -> InlineKeyboardMarkup | None:
     try:
         buttons = [InlineKeyboardButton(text="Дата события", callback_data=f"change_event_date"),
                    InlineKeyboardButton(text="Время события", callback_data=f"change_event_time"),
@@ -58,4 +58,4 @@ def make_event_point_as_buttons():  # надо передать сюда или 
         return make_time_inline_keyboard(buttons, width=1)
     except Exception as e:
         print(f"Произошла ошибка{e}")
-        return []
+        return None
