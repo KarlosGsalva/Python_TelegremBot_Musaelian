@@ -13,7 +13,7 @@ import lexicon as lx
 import keyboards as kb
 
 
-def _make_key(callback: CallbackQuery):
+def _make_key(callback: CallbackQuery) -> StorageKey | None:
     try:
         key = StorageKey(bot_id=callback.bot.id,
                          chat_id=callback.message.chat.id,
@@ -21,19 +21,11 @@ def _make_key(callback: CallbackQuery):
         return key
     except Exception as e:
         print(f"Произошла ошибка{e}")
-        return []
-
-
-def _get_date_from_timestamp(callback: CallbackQuery):
-    try:
-        return int(callback.data[callback.data.find(':') + 1:])
-    except Exception as e:
-        print(f"Произошла ошибка{e}")
-        return []
+        return None
 
 
 async def select_date(callback: CallbackQuery, widget: ManagedCalendar,
-                      manager: DialogManager, timestamp: date):
+                      manager: DialogManager, timestamp: date) -> None:
     try:
         date_for_show = timestamp.strftime('%d.%m.%Y')
 
@@ -53,11 +45,11 @@ async def select_date(callback: CallbackQuery, widget: ManagedCalendar,
         await state.set_state(FSMCreateEvent.fill_event_time)
     except Exception as e:
         print(f"Произошла ошибка{e}")
-        return []
+        return None
 
 
 async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
-                    manager: DialogManager, timestamp: date):
+                    manager: DialogManager, timestamp: date) -> None:
     try:
         date_for_show = timestamp.strftime('%d.%m.%Y')
 
@@ -82,7 +74,7 @@ async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
         await state.clear()
     except Exception as e:
         print(f"Произошла ошибка{e}")
-        return []
+        return None
 
 # Создание виджета календаря
 set_calendar_date = Calendar(id='set_calendar', on_click=select_date)
