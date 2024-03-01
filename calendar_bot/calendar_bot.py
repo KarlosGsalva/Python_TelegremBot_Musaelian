@@ -13,9 +13,9 @@ from dialog_funcs import set_calendar_window, edit_calendar_window
 from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
-import secrets  # модуль с токеном бота
+import bot_token  # модуль с токеном бота
 
-BOT_TOKEN = secrets.BOT_TOKEN
+BOT_TOKEN = bot_token.BOT_TOKEN
 bot = Bot(token=BOT_TOKEN)
 
 # Регистрируем окно в диалоге, диалог в диспетчере
