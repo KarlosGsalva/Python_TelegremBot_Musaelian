@@ -10,7 +10,7 @@ import pathlib
 async def write_event_in_txt_file(event_name: str,
                                   event_date: date = None,
                                   event_time: str = None,
-                                  event_details: str = None):
+                                  event_details: str = None) -> None:
     try:
         formatted_date = event_date if event_date else "Дата не указана"
         formatted_time = event_time if event_time else "Время не указано"
@@ -30,7 +30,7 @@ async def write_event_in_txt_file(event_name: str,
 async def write_event_in_json_file(event_name: str,
                                    event_date: date = None,
                                    event_time: str = None,
-                                   event_details: str = None):
+                                   event_details: str = None) -> None:
     try:
         formatted_date = event_date if event_date else "Дата не указана"
         formatted_time = event_time if event_time else "Время не указано"
@@ -47,7 +47,7 @@ async def write_event_in_json_file(event_name: str,
 
 
 # Чтение имеющихся событий в указанной или базовой директории
-def gather_having_events(path_for_search=None):
+def gather_having_events(path_for_search=None) -> list[str]:
     try:
         if path_for_search is None:
             path_for_search = pathlib.Path(__file__).parent
@@ -97,7 +97,7 @@ async def change_event_point(event_name: str, event_point: str, new_data: str) -
 
 
 # Удаляем событие
-async def delete_event(event_name: str):
+async def delete_event(event_name: str) -> None:
     try:
         await aiof_os.remove(event_name)
     except Exception as e:
