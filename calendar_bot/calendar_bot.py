@@ -8,7 +8,7 @@ from aiogram_dialog import DialogManager, Window, Dialog, setup_dialogs
 
 from calendar_async_back import (write_event_in_json_file,  # модуль с бэкэндом
                                  read_event, change_event_point,
-                                 format_event_data)
+                                 format_event_data, delete_event)
 from dialog_funcs import set_calendar_window, edit_calendar_window, _make_key
 from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp, storage
 import keyboards as kb  # модуль с клавиатурами
@@ -173,21 +173,42 @@ async def edit_event_time(callback: CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data == "change_event_details", StateFilter(FSMEditEvent.choose_event_point))
 async def request_new_event_details(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()  # подтверждаем получение callback с выбором опции
     await callback.message.answer(lx.WARNING_TEXTS["request_new_event_details"])
     await state.set_state(FSMEditEvent.edit_event_details)
 
 
 @dp.message(StateFilter(FSMEditEvent.edit_event_details))
 async def set_new_event_details(message: Message, state: FSMContext):
+    # Сохраняем новое описание события
     new_event_details = message.text
 
+    # Сохраняем данные из state
     user_data = await state.get_data()
 
+    # Изменяем событие
     await change_event_point(user_data["event_name"], "Описание события",
                              new_event_details)
 
+    # Уведомляем об успешном изменении данных
     await message.answer(text=f"Новое описание события: {new_event_details}")
     await message.answer(lx.WARNING_TEXTS["event_details_edited"])
+    await state.clear()
+
+
+@dp.message(Command(commands=["4"]), StateFilter(default_state))
+async def request_event_for_delete(message: Message, state: FSMContext):
+    keyboard = kb.make_events_as_buttons()
+    await message.answer(text=lx.WARNING_TEXTS["request_event_for_delete"],
+                         reply_markup=keyboard)
+    await state.set_state(FSMMenuOptions.delete_event)
+
+
+@dp.callback_query(StateFilter(FSMMenuOptions.delete_event))
+async def make_delete_event(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()  # подтверждаем получение callback с выбором события
+    await delete_event(callback.data)
+    await callback.message.answer(text=f"Событие {callback.data[:-5]} удалено.")
     await state.clear()
 
 

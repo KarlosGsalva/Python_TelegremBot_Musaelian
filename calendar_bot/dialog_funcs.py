@@ -47,7 +47,6 @@ async def select_date(callback: CallbackQuery, widget: ManagedCalendar,
 async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
                     manager: DialogManager, timestamp: date):
     date_for_show = timestamp.strftime('%d.%m.%Y')
-    print(date_for_show)
 
     # Инициализируем контекст для сохранения даты и внесения изменений
     key = _make_key(callback)

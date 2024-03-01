@@ -22,6 +22,7 @@ WARNING_TEXTS = {
         "event_time_edited": "Время события изменено.",
         "request_new_event_details": "Введите новое описание события:",
         "event_details_edited": "Описание события изменено.",
+        "request_event_for_delete": "Выберите события для удаления:",
         "show_event": "Пожалуйста, данные события",
         "event_made": "Событие создано.",
         "exit": "Вы вышли из приложения\n\n"

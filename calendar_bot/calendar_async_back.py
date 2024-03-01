@@ -1,4 +1,5 @@
 import aiofiles as aiof
+import aiofiles.os as aiof_os
 
 from datetime import date
 import json
@@ -77,7 +78,9 @@ async def change_event_point(event_name: str, event_point: str, new_data: str) -
         await new_event.write(json.dumps(deserialised_data))
 
 
-
+# Удаляем событие
+async def delete_event(event_name: str):
+    await aiof_os.remove(event_name)
 
 
 
