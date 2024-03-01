@@ -47,6 +47,7 @@ async def _make_callback_inline_buttons(mode: str) -> list | None:
         return buttons
     except Exception as e:
         print(NOTIFICATION_TEXTS['error'], e)
+        return []
 
 
 async def make_notes_as_inline_buttons(mode: str):
