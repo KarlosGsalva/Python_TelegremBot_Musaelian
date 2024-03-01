@@ -1,16 +1,16 @@
-from aiogram import Bot, Dispatcher, F
+from aiogram import Bot, F
 
 from aiogram.types import BotCommand, Message, CallbackQuery
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
-from aiogram_dialog import DialogManager, Window, Dialog, setup_dialogs
+from aiogram_dialog import DialogManager, Dialog, setup_dialogs
 
 from calendar_async_back import (write_event_in_json_file,  # модуль с бэкэндом
                                  read_event, change_event_point,
                                  format_event_data, delete_event)
-from dialog_funcs import set_calendar_window, edit_calendar_window, _make_key
-from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp, storage
+from dialog_funcs import set_calendar_window, edit_calendar_window
+from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
 import secrets  # модуль с токеном бота
@@ -45,6 +45,13 @@ async def process_start_command(message: Message):
 @dp.message(Command(commands=["cancel"]), StateFilter(default_state))
 async def process_cancel_command(message: Message):
     await message.answer(lx.WARNING_TEXTS["cancel"])
+
+
+# Обрабатываем команду cancel на дефолтном state
+@dp.callback_query(F.data == "cancel", StateFilter(default_state))
+async def process_cancel_callback_command(callback: CallbackQuery):
+    await callback.message.answer(lx.WARNING_TEXTS["cancel"])
+    await callback.answer()
 
 
 # Обрабатываем callback cancel: отмены, на не дефолтном state
@@ -171,6 +178,7 @@ async def edit_event_time(callback: CallbackQuery, state: FSMContext):
     await state.clear()
 
 
+# Хэндлер 4 пункта меню, удалить событие
 @dp.callback_query(F.data == "change_event_details", StateFilter(FSMEditEvent.choose_event_point))
 async def request_new_event_details(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # подтверждаем получение callback с выбором опции
@@ -178,6 +186,7 @@ async def request_new_event_details(callback: CallbackQuery, state: FSMContext):
     await state.set_state(FSMEditEvent.edit_event_details)
 
 
+# Хэндлер меняющий описание выбранного события
 @dp.message(StateFilter(FSMEditEvent.edit_event_details))
 async def set_new_event_details(message: Message, state: FSMContext):
     # Сохраняем новое описание события
@@ -196,6 +205,7 @@ async def set_new_event_details(message: Message, state: FSMContext):
     await state.clear()
 
 
+# Хэндлер 4 пункта меню, удалить событие
 @dp.message(Command(commands=["4"]), StateFilter(default_state))
 async def request_event_for_delete(message: Message, state: FSMContext):
     keyboard = kb.make_events_as_buttons()
@@ -204,6 +214,7 @@ async def request_event_for_delete(message: Message, state: FSMContext):
     await state.set_state(FSMMenuOptions.delete_event)
 
 
+# Хэндлер для удаления выбранного события
 @dp.callback_query(StateFilter(FSMMenuOptions.delete_event))
 async def make_delete_event(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # подтверждаем получение callback с выбором события
@@ -212,10 +223,25 @@ async def make_delete_event(callback: CallbackQuery, state: FSMContext):
     await state.clear()
 
 
+# Хэндлер для показа всех событий
+@dp.message(Command(commands=["5"]), StateFilter(default_state))
+async def show_all_events(message: Message):
+    keyboard = kb.make_events_as_buttons()
+    await message.answer(lx.WARNING_TEXTS["show_all_events"],
+                         reply_markup=keyboard)
+
+
 # Хэндлер для неотловленных сообщений
 @dp.message(StateFilter(default_state))
 async def echo(message: Message):
     await message.reply(text="Извините, я вас не понимать")
+
+
+# Хэндлер для неотловленных callback
+@dp.callback_query(StateFilter(default_state))
+async def echo(callback: CallbackQuery):
+    await callback.message.answer(text="Извините, я вас не понимать")
+    await callback.answer()
 
 
 if __name__ == '__main__':
