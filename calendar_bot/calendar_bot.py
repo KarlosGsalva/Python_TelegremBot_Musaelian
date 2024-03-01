@@ -154,7 +154,7 @@ async def get_new_event_date(callback: CallbackQuery, state: FSMContext,
 
 @dp.callback_query(F.data == "change_event_time", StateFilter(FSMEditEvent.choose_event_point))
 async def get_new_event_time(callback: CallbackQuery, state: FSMContext):
-    keyboard = kb.make_time_inline_keyboard()
+    keyboard = kb.time_keyboard()
     await callback.message.answer(text=lx.WARNING_TEXTS["request_new_event_time"],
                                   reply_markup=keyboard)
     await state.set_state(FSMEditEvent.edit_event_time)

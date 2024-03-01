@@ -41,7 +41,7 @@ async def select_date(callback: CallbackQuery, widget: ManagedCalendar,
 
         # Запрашиваем время события, выдаем клавиатуру, меняем state
         await callback.message.answer(lx.WARNING_TEXTS["request_event_time"],
-                                      reply_markup=kb.make_time_inline_keyboard())
+                                      reply_markup=kb.time_keyboard())
         await state.set_state(FSMCreateEvent.fill_event_time)
     except Exception as e:
         print(f"Произошла ошибка{e}")
