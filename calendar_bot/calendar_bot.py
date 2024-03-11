@@ -6,10 +6,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram_dialog import DialogManager, Dialog, setup_dialogs
 
-from calendar_async_back import (write_event_in_json_file,  # модуль с бэкэндом
-                                 read_event, change_event_point,
-                                 format_event_data, delete_event)
-from dialog_funcs import set_calendar_window, edit_calendar_window
+from async_file_back import (write_event_in_json_file,  # модуль с бэкэндом
+                             read_event, change_event_point,
+                             format_event_data, delete_event)
+from dialog_choose_dates import set_calendar_window, edit_calendar_window
 from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами

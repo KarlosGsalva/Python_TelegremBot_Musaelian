@@ -8,7 +8,7 @@ from aiogram_dialog.widgets.text import Const
 from aiogram_dialog import DialogManager, Window, Dialog, setup_dialogs
 
 from states import FSMEditEvent, FSMCreateEvent, storage, dp
-from calendar_async_back import change_event_point
+from async_file_back import change_event_point
 import lexicon as lx
 import keyboards as kb
 

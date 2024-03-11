@@ -2,7 +2,7 @@ from aiogram.utils.keyboard import (InlineKeyboardButton,
                                     InlineKeyboardMarkup,
                                     InlineKeyboardBuilder)
 
-from calendar_async_back import gather_having_events
+from async_file_back import gather_having_events
 
 
 # Создаем инлайн кнопку cancel
