@@ -126,8 +126,8 @@ async def show_event(message: Message, state: FSMContext):
 @dp.callback_query(StateFilter(FSMMenuOptions.read_event))
 async def show_requested_event(callback: CallbackQuery, state: FSMContext):
     event_id = int(callback.data)
-    user = callback.from_user.id
-    event_data = await db.read_choosed_event(user, event_id)
+    user_id = callback.from_user.id
+    event_data = await db.read_choosed_event(user_id, event_id)
     await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(lx.WARNING_TEXTS["show_event"])
     await callback.message.answer(event_data)
@@ -136,7 +136,7 @@ async def show_requested_event(callback: CallbackQuery, state: FSMContext):
 
 @dp.message(Command(commands=["3"]), StateFilter(default_state))
 async def choose_event_for_edit(message: Message, state: FSMContext):
-    keyboard = kb.make_events_as_buttons()
+    keyboard = await kb.make_events_as_buttons(message.from_user.id)
     await message.answer(text=lx.WARNING_TEXTS["request_event_for_edit"],
                          reply_markup=keyboard)
     await state.set_state(FSMEditEvent.choose_event)
@@ -144,12 +144,28 @@ async def choose_event_for_edit(message: Message, state: FSMContext):
 
 @dp.callback_query(StateFilter(FSMEditEvent.choose_event))
 async def choose_event_point_for_edit(callback: CallbackQuery, state: FSMContext):
-    event_name = callback.data[:-5]
-    await state.update_data(event_name=event_name)
+    event_id = int(callback.data)
+    user_id = callback.from_user.id
+    await state.update_data(event_id=event_id, user_tg_id=user_id)
     await callback.message.answer(text=lx.WARNING_TEXTS["request_event_point_for_edit"],
-                                  reply_markup=kb.make_event_point_as_buttons())
+                                  reply_markup=kb.make_event_points_as_buttons())
     await callback.answer()
     await state.set_state(FSMEditEvent.choose_event_point)
+
+
+@dp.callback_query(F.data == "change_event_name", StateFilter(FSMEditEvent.choose_event_point))
+async def change_event_name(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(text=lx.WARNING_TEXTS["request_new_event_name"])
+    await state.set_state(FSMEditEvent.edit_event_name)
+
+
+@dp.message(StateFilter(FSMEditEvent.edit_event_name))
+async def edit_event_name(message: Message, state: FSMContext):
+    new_event_name = message.text
+    user_data = await state.get_data()
+    await db.rename_event(user_data["user_tg_id"], user_data["event_id"], new_event_name)
+    await message.answer(lx.WARNING_TEXTS["event_name_edited"])
+    await state.clear()
 
 
 @dp.callback_query(F.data == "change_event_date", StateFilter(FSMEditEvent.choose_event_point))

@@ -16,6 +16,7 @@ class FSMCreateEvent(StatesGroup):
 class FSMEditEvent(StatesGroup):
     choose_event = State()
     choose_event_point = State()
+    edit_event_name = State()
     edit_event_date = State()
     edit_event_time = State()
     edit_event_details = State()

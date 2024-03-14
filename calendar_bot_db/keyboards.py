@@ -36,7 +36,7 @@ def time_keyboard() -> InlineKeyboardMarkup | None:
 
 
 # Создаем события как кнопки
-async def make_events_as_buttons(user_tg_id) -> InlineKeyboardMarkup | None:
+async def make_events_as_buttons(user_tg_id: int) -> InlineKeyboardMarkup | None:
     try:
         buttons: list[InlineKeyboardButton] = []
         events: dict = await db.gather_all_events_db(user_tg_id)
@@ -54,9 +54,10 @@ async def make_events_as_buttons(user_tg_id) -> InlineKeyboardMarkup | None:
 
 
 # Создаем пункты события как кнопки
-def make_event_point_as_buttons() -> InlineKeyboardMarkup | None:
+def make_event_points_as_buttons() -> InlineKeyboardMarkup | None:
     try:
-        buttons = [InlineKeyboardButton(text="Дата события", callback_data=f"change_event_date"),
+        buttons = [InlineKeyboardButton(text="Название события", callback_data=f"change_event_name"),
+                   InlineKeyboardButton(text="Дата события", callback_data=f"change_event_date"),
                    InlineKeyboardButton(text="Время события", callback_data=f"change_event_time"),
                    InlineKeyboardButton(text="Описание события", callback_data=f"change_event_details"),
                    cancel_button]

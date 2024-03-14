@@ -17,6 +17,8 @@ WARNING_TEXTS = {
         "request_event_for_show": "Пожалуйста, выберите событие для чтения",
         "request_event_for_edit": "Выберите событие для изменения:",
         "request_event_point_for_edit": "Выберие пункт изменений:",
+        "request_new_event_name": "Введите новое название события:",
+        "event_name_edited": "Название события изменено.",
         "event_date_edited": "Дата события изменена.",
         "request_new_event_time": "Выберите или введите новое время события:",
         "event_time_edited": "Время события изменено.",

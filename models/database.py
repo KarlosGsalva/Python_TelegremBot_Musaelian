@@ -1,10 +1,10 @@
 from datetime import date, time
 
-from sqlalchemy import select
+from sqlalchemy import select, update, and_
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from models.models_core import metadata_obj, users, events
-from config import settings
+from models.config import settings
 
 async_engine = create_async_engine(url=settings.DATABASE_URL_asyncpg,
                                    echo=True, pool_size=5, max_overflow=10)
@@ -51,9 +51,10 @@ async def write_event_in_db(user_tg_id: int,
                 event_details=event_details))
     except Exception as e:
         print(f"Произошла ошибка в write_event_in_db {e}")
+        return None
 
 
-async def gather_all_events_db(user_tg_id: int) -> dict:
+async def gather_all_events_db(user_tg_id: int) -> dict | None:
     try:
         async with async_engine.begin() as connection:
             result = await connection.execute(
@@ -63,9 +64,10 @@ async def gather_all_events_db(user_tg_id: int) -> dict:
             return events_data
     except Exception as e:
         print(f"Произошла ошибка в gather_all_events_db {e}")
+        return None
 
 
-async def read_choosed_event(user_tg_id: int, event_id: int) -> str:
+async def read_choosed_event(user_tg_id: int, event_id: int) -> str | None:
     try:
         events: dict = await gather_all_events_db(user_tg_id)
 
@@ -77,6 +79,22 @@ async def read_choosed_event(user_tg_id: int, event_id: int) -> str:
         return '\n'.join([event_name, event_date, event_time, event_details])
     except Exception as e:
         print(f"Произошла ошибка в read_choosed_event {e}")
+        return None
+
+
+async def rename_event(user_tg_id: int, event_id: int, new_event_name: str) -> None:
+    print(user_tg_id)
+    print(event_id)
+    print(new_event_name)
+    try:
+        async with async_engine.begin() as connection:
+            await connection.execute(
+                update(events).where(and_(events.c.id == event_id,
+                                          events.c.user_tg_id == user_tg_id)).
+                values(event_name=new_event_name))
+    except Exception as e:
+        print(f"Произошла ошибка в rename_event {e}")
+        return None
 
 # asyncio.run(async_main())
 # asyncio.run(gather_all_events_db(1074713049))
