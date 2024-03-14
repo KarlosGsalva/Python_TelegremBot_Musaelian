@@ -27,38 +27,38 @@ import pathlib
 
 
 # Чтение имеющихся событий в указанной или базовой директории
-def gather_having_events(path_for_search=None) -> list[str]:
-    try:
-        if path_for_search is None:
-            path_for_search = pathlib.Path(__file__).parent
-        else:
-            path_for_search = pathlib.Path(path_for_search)
-
-        events: list = [event.name for event in path_for_search.glob("*.json")]
-        return events
-    except Exception as e:
-        print(f"Произошла ошибка{e}")
+# def gather_having_events(path_for_search=None) -> list[str]:
+#     try:
+#         if path_for_search is None:
+#             path_for_search = pathlib.Path(__file__).parent
+#         else:
+#             path_for_search = pathlib.Path(path_for_search)
+#
+#         events: list = [event.name for event in path_for_search.glob("*.json")]
+#         return events
+#     except Exception as e:
+#         print(f"Произошла ошибка{e}")
 
 
 # Читаем запрошенное событие из файла
-async def read_event(event_name: str) -> dict:
-    try:
-        async with aiof.open(f"{event_name}", mode="r", encoding="utf-8") as json_file:
-            content = await json_file.read()
-            event_data = json.loads(content)
-        return event_data
-    except Exception as e:
-        print(f"Произошла ошибка{e}")
+# async def read_event(event_name: str) -> dict:
+#     try:
+#         async with aiof.open(f"{event_name}", mode="r", encoding="utf-8") as json_file:
+#             content = await json_file.read()
+#             event_data = json.loads(content)
+#         return event_data
+#     except Exception as e:
+#         print(f"Произошла ошибка{e}")
 
 
 # Форматируем словарь для вывода пользователю
-def format_event_data(event_data: dict) -> str:
-    try:
-        event_name = ''.join(event_data.keys())
-        event_details = "\n".join(f"{name}: {text}" for name, text in event_data[event_name].items())
-        return event_name + "\n" + event_details
-    except Exception as e:
-        print(f"Произошла ошибка{e}")
+# def format_event_data(event_data: dict) -> str:
+#     try:
+#         event_name = ''.join(event_data.keys())
+#         event_details = "\n".join(f"{name}: {text}" for name, text in event_data[event_name].items())
+#         return event_name + "\n" + event_details
+#     except Exception as e:
+#         print(f"Произошла ошибка{e}")
 
 
 # Изменяем выбранный пункт события

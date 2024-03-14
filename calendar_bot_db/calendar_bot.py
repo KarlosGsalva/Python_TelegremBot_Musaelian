@@ -7,12 +7,12 @@ from aiogram.fsm.state import default_state
 from aiogram_dialog import DialogManager, Dialog, setup_dialogs
 from datetime import date, time, datetime
 
-from async_db_back import (# write_event_in_db,  # модуль с бэкэндом
-                           read_event, change_event_point,
-                           format_event_data, delete_event)
+from async_db_back import (  # write_event_in_db, read_event,  format_event_data, # модуль с бэкэндом
+                           change_event_point,
+                           delete_event)
 from dialog_choose_dates import set_calendar_window, edit_calendar_window
 from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp
-from models.database import write_event_in_db
+from models import database as db
 
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
@@ -108,7 +108,7 @@ async def write_event_details(message: Message, state: FSMContext):
     event_details = event_data["details"]
 
     # Записываем в БД
-    await write_event_in_db(user_tg_id, event_name, event_date, event_time, event_details)
+    await db.write_event_in_db(user_tg_id, event_name, event_date, event_time, event_details)
     await message.answer(lx.WARNING_TEXTS["event_made"])
     await state.clear()
 
@@ -116,7 +116,7 @@ async def write_event_details(message: Message, state: FSMContext):
 @dp.message(Command(commands=["2"]), StateFilter(default_state))
 async def show_event(message: Message, state: FSMContext):
     # Выбираем событие инлайн кнопкой
-    keyboard = kb.make_events_as_buttons()
+    keyboard = await kb.make_events_as_buttons(message.from_user.id)
     await message.answer(text=lx.WARNING_TEXTS["request_event_for_show"],
                          reply_markup=keyboard)
     # Переводимся в состояние чтения заметки
@@ -125,11 +125,12 @@ async def show_event(message: Message, state: FSMContext):
 
 @dp.callback_query(StateFilter(FSMMenuOptions.read_event))
 async def show_requested_event(callback: CallbackQuery, state: FSMContext):
-    event_for_read = callback.data
-    event_data = await read_event(event_for_read)
+    event_id = int(callback.data)
+    user = callback.from_user.id
+    event_data = await db.read_choosed_event(user, event_id)
     await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(lx.WARNING_TEXTS["show_event"])
-    await callback.message.answer(format_event_data(event_data))
+    await callback.message.answer(event_data)
     await state.clear()
 
 

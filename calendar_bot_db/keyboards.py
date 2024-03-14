@@ -2,7 +2,7 @@ from aiogram.utils.keyboard import (InlineKeyboardButton,
                                     InlineKeyboardMarkup,
                                     InlineKeyboardBuilder)
 
-from async_db_back import gather_having_events
+from models import database as db
 
 
 # Создаем инлайн кнопку cancel
@@ -19,7 +19,7 @@ def _make_inline_keyboard(buttons: list[InlineKeyboardButton],
         ikb_builder.row(*buttons, width=width)
         return ikb_builder.as_markup()
     except Exception as e:
-        print(f"Произошла ошибка{e}")
+        print(f"Произошла ошибка в _make_inline_keyboard {e}")
         return None
 
 
@@ -31,19 +31,25 @@ def time_keyboard() -> InlineKeyboardMarkup | None:
         buttons.append(cancel_button)
         return _make_inline_keyboard(buttons)
     except Exception as e:
-        print(f"Произошла ошибка{e}")
+        print(f"Произошла ошибка в time_keyboard {e}")
         return None
 
 
 # Создаем события как кнопки
-def make_events_as_buttons() -> InlineKeyboardMarkup | None:
+async def make_events_as_buttons(user_tg_id) -> InlineKeyboardMarkup | None:
     try:
-        buttons = [InlineKeyboardButton(text=event_name[:-5], callback_data=f"{event_name}")
-                   for event_name in gather_having_events()]
+        buttons: list[InlineKeyboardButton] = []
+        events: dict = await db.gather_all_events_db(user_tg_id)
+
+        for detail in events.values():
+            print(detail)
+            button = InlineKeyboardButton(text=detail["event_name"], callback_data=str(detail["id"]))
+            buttons.append(button)
+
         buttons.append(cancel_button)
         return _make_inline_keyboard(buttons, width=1)
     except Exception as e:
-        print(f"Произошла ошибка{e}")
+        print(f"Произошла ошибка в make_events_as_buttons {e}")
         return None
 
 
@@ -56,5 +62,5 @@ def make_event_point_as_buttons() -> InlineKeyboardMarkup | None:
                    cancel_button]
         return _make_inline_keyboard(buttons, width=1)
     except Exception as e:
-        print(f"Произошла ошибка{e}")
+        print(f"Произошла ошибка в make_event_point_as_buttons {e}")
         return None
