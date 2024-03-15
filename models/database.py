@@ -83,9 +83,6 @@ async def read_choosed_event(user_tg_id: int, event_id: int) -> str | None:
 
 
 async def rename_event(user_tg_id: int, event_id: int, new_event_name: str) -> None:
-    print(user_tg_id)
-    print(event_id)
-    print(new_event_name)
     try:
         async with async_engine.begin() as connection:
             await connection.execute(
@@ -95,6 +92,26 @@ async def rename_event(user_tg_id: int, event_id: int, new_event_name: str) -> N
     except Exception as e:
         print(f"Произошла ошибка в rename_event {e}")
         return None
+
+
+async def change_event_date(user_tg_id: int, event_id: int, new_event_date: date) -> None:
+    try:
+        async with async_engine.begin() as connection:
+            await connection.execute(
+                update(events).where(and_(events.c.user_tg_id == user_tg_id,
+                                          events.c.id == event_id)).
+                values(event_date=new_event_date)
+            )
+    except Exception as e:
+        print(f"Произошла ошибка в change_event_date {e}")
+        return None
+
+
+
+
+
+
+
 
 # asyncio.run(async_main())
 # asyncio.run(gather_all_events_db(1074713049))
