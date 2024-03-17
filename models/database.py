@@ -100,14 +100,22 @@ async def change_event_date(user_tg_id: int, event_id: int, new_event_date: date
             await connection.execute(
                 update(events).where(and_(events.c.user_tg_id == user_tg_id,
                                           events.c.id == event_id)).
-                values(event_date=new_event_date)
-            )
+                values(event_date=new_event_date))
     except Exception as e:
         print(f"Произошла ошибка в change_event_date {e}")
         return None
 
 
-
+async def change_event_time(user_tg_id: int, event_id: int, new_event_time: time):
+    try:
+        async with async_engine.begin() as connection:
+            await connection.execute(
+                update(events).where(and_(events.c.user_tg_id == user_tg_id,
+                                          events.c.id == event_id)).
+                values(event_time=new_event_time))
+    except Exception as e:
+        print(f"Произошла ошибка в change_event_time {e}")
+        return None
 
 
 

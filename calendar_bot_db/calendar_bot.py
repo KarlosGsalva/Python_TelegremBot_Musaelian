@@ -7,7 +7,7 @@ from aiogram.fsm.state import default_state
 from aiogram_dialog import DialogManager, Dialog, setup_dialogs
 from datetime import date, time, datetime
 
-from async_db_back import (  # write_event_in_db, read_event,  format_event_data, # модуль с бэкэндом
+from async_db_back import (convert_str_to_time,
                            change_event_point,
                            delete_event)
 from dialog_choose_dates import set_calendar_window, edit_calendar_window
@@ -104,7 +104,7 @@ async def write_event_details(message: Message, state: FSMContext):
     user_tg_id = event_data["user_tg_id"]
     event_name = event_data["event_name"]
     event_date = event_data["event_date"]
-    event_time = datetime.strptime(event_data["event_time"], "%H:%M")
+    event_time = convert_str_to_time(event_data["event_time"])
     event_details = event_data["details"]
 
     # Записываем в БД
@@ -185,14 +185,14 @@ async def get_new_event_time(callback: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data.startswith("time"), StateFilter(FSMEditEvent.edit_event_time))
 async def edit_event_time(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # подтверждаем получение callback с time
-    new_event_time = callback.data[5:]  # сохраняем время без "time"
+    # сохраняем время в datetime.time
+    new_event_time = convert_str_to_time(callback.data[5:])
 
     # Сохраняем данные из state
     user_data = await state.get_data()
 
     # Изменяем событие
-    await change_event_point(user_data["event_name"], "Время события",
-                             new_event_time)
+    await db.change_event_time(user_data["user_tg_id"], user_data["event_id"], new_event_time)
 
     # Уведомляем об успешном изменении данных
     await callback.message.answer(text=f"Новое время события: {new_event_time}")

@@ -1,9 +1,14 @@
 import aiofiles as aiof
 import aiofiles.os as aiof_os
 
-from datetime import date
+from datetime import time
 import json
 import pathlib
+
+
+def convert_str_to_time(chosen_time: str):
+    new_event_time = time(*[int(tm) for tm in chosen_time.split(":")])
+    return new_event_time
 
 
 # Функция записи события в json файл
