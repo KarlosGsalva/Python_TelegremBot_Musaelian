@@ -200,7 +200,7 @@ async def edit_event_time(callback: CallbackQuery, state: FSMContext):
     await state.clear()
 
 
-# Хэндлер 4 пункта меню, удалить событие
+# Хэндлер 3 пункта меню, изменить описание события
 @dp.callback_query(F.data == "change_event_details", StateFilter(FSMEditEvent.choose_event_point))
 async def request_new_event_details(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # подтверждаем получение callback с выбором опции
@@ -218,8 +218,9 @@ async def set_new_event_details(message: Message, state: FSMContext):
     user_data = await state.get_data()
 
     # Изменяем событие
-    await change_event_point(user_data["event_name"], "Описание события",
-                             new_event_details)
+    # await change_event_point(user_data["event_name"], "Описание события",
+    #                          new_event_details)
+    await db.change_event_details(user_data["user_tg_id"], user_data["event_id"], new_event_details)
 
     # Уведомляем об успешном изменении данных
     await message.answer(text=f"Новое описание события: {new_event_details}")

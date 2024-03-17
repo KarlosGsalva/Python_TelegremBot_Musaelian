@@ -118,7 +118,16 @@ async def change_event_time(user_tg_id: int, event_id: int, new_event_time: time
         return None
 
 
-
+async def change_event_details(user_tg_id: int, event_id: int, event_details: str) -> None:
+    try:
+        async with async_engine.begin() as connection:
+            await connection.execute(
+                update(events).where(and_(events.c.user_tg_id == user_tg_id,
+                                          events.c.id == event_id)).
+                values(event_details=event_details))
+    except Exception as e:
+        print(f"Произошла ошибка в change_event_time {e}")
+        return None
 
 
 # asyncio.run(async_main())
