@@ -11,6 +11,10 @@ def convert_str_to_time(chosen_time: str):
     return new_event_time
 
 
+def split_callback_to_name_id(callback: str) -> dict:
+    event_name, event_id = callback.split("_")
+    return {"event_name": event_name, "event_id": int(event_id)}
+
 # Функция записи события в json файл
 # async def write_event_in_db(event_name: str,
 #                             event_date: date = None,

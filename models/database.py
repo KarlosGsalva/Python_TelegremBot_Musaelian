@@ -1,6 +1,6 @@
 from datetime import date, time
 
-from sqlalchemy import select, update, and_
+from sqlalchemy import select, update, and_, delete
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from models.models_core import metadata_obj, users, events
@@ -127,6 +127,17 @@ async def change_event_details(user_tg_id: int, event_id: int, event_details: st
                 values(event_details=event_details))
     except Exception as e:
         print(f"Произошла ошибка в change_event_time {e}")
+        return None
+
+
+async def delete_event(user_tg_id: int, event_id: int) -> None:
+    try:
+        async with async_engine.begin() as connection:
+            await connection.execute(
+                delete(events).where(and_(events.c.user_tg_id == user_tg_id,
+                                          events.c.id == event_id)))
+    except Exception as e:
+        print(f"Произошла ошибка в delete_event {e}")
         return None
 
 

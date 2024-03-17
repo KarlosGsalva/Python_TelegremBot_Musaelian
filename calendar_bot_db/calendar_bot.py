@@ -8,6 +8,7 @@ from aiogram_dialog import DialogManager, Dialog, setup_dialogs
 from datetime import date, time, datetime
 
 from async_db_back import (convert_str_to_time,
+                           split_callback_to_name_id,
                            change_event_point,
                            delete_event)
 from dialog_choose_dates import set_calendar_window, edit_calendar_window
@@ -125,9 +126,9 @@ async def show_event(message: Message, state: FSMContext):
 
 @dp.callback_query(StateFilter(FSMMenuOptions.read_event))
 async def show_requested_event(callback: CallbackQuery, state: FSMContext):
-    event_id = int(callback.data)
-    user_id = callback.from_user.id
-    event_data = await db.read_choosed_event(user_id, event_id)
+    event_id: int = split_callback_to_name_id(callback.data)["event_id"]
+    user_tg_id: int = callback.from_user.id
+    event_data = await db.read_choosed_event(user_tg_id, event_id)
     await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(lx.WARNING_TEXTS["show_event"])
     await callback.message.answer(event_data)
@@ -144,9 +145,9 @@ async def choose_event_for_edit(message: Message, state: FSMContext):
 
 @dp.callback_query(StateFilter(FSMEditEvent.choose_event))
 async def choose_event_point_for_edit(callback: CallbackQuery, state: FSMContext):
-    event_id = int(callback.data)
-    user_id = callback.from_user.id
-    await state.update_data(event_id=event_id, user_tg_id=user_id)
+    event_id: int = split_callback_to_name_id(callback.data)["event_id"]
+    user_tg_id: int = callback.from_user.id
+    await state.update_data(event_id=event_id, user_tg_id=user_tg_id)
     await callback.message.answer(text=lx.WARNING_TEXTS["request_event_point_for_edit"],
                                   reply_markup=kb.make_event_points_as_buttons())
     await callback.answer()
@@ -218,8 +219,6 @@ async def set_new_event_details(message: Message, state: FSMContext):
     user_data = await state.get_data()
 
     # Изменяем событие
-    # await change_event_point(user_data["event_name"], "Описание события",
-    #                          new_event_details)
     await db.change_event_details(user_data["user_tg_id"], user_data["event_id"], new_event_details)
 
     # Уведомляем об успешном изменении данных
@@ -231,7 +230,7 @@ async def set_new_event_details(message: Message, state: FSMContext):
 # Хэндлер 4 пункта меню, удалить событие
 @dp.message(Command(commands=["4"]), StateFilter(default_state))
 async def request_event_for_delete(message: Message, state: FSMContext):
-    keyboard = kb.make_events_as_buttons()
+    keyboard = await kb.make_events_as_buttons(message.from_user.id)
     await message.answer(text=lx.WARNING_TEXTS["request_event_for_delete"],
                          reply_markup=keyboard)
     await state.set_state(FSMMenuOptions.delete_event)
@@ -241,8 +240,10 @@ async def request_event_for_delete(message: Message, state: FSMContext):
 @dp.callback_query(StateFilter(FSMMenuOptions.delete_event))
 async def make_delete_event(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # подтверждаем получение callback с выбором события
-    await delete_event(callback.data)
-    await callback.message.answer(text=f"Событие {callback.data[:-5]} удалено.")
+    event_name = split_callback_to_name_id(callback.data)["event_name"]
+    event_id = split_callback_to_name_id(callback.data)["event_id"]
+    await db.delete_event(callback.from_user.id, int(event_id))
+    await callback.message.answer(text=f"Событие {event_name} удалено.")
     await state.clear()
 
 
