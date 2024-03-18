@@ -11,7 +11,7 @@ from aiogram_dialog import DialogManager, Dialog, setup_dialogs
 
 from support_funcs import convert_str_to_time, split_callback_to_name_id
 from dialog_choose_dates import set_calendar_window, edit_calendar_window
-from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp
+from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, FSMRegistryUser, dp
 from models import database as db
 
 import keyboards as kb  # модуль с клавиатурами
@@ -258,6 +258,37 @@ async def show_all_events(message: Message):
     keyboard = await kb.make_events_as_buttons(message.from_user.id)
     await message.answer(lx.WARNING_TEXTS["show_all_events"],
                          reply_markup=keyboard)
+
+
+@dp.message(Command(commands=["6"]), StateFilter(default_state))
+async def registry_user(message: Message, state: FSMContext):
+    await message.answer(lx.WARNING_TEXTS["request_username"])
+    await state.set_state(FSMRegistryUser.fill_username)
+
+
+@dp.message(StateFilter(FSMRegistryUser.fill_username))
+async def get_username(message: Message, state: FSMContext):
+    await state.update_data(username=message.text)
+    await message.answer(lx.WARNING_TEXTS["request_email"])
+    await state.set_state(FSMRegistryUser.fill_email)
+
+
+@dp.message(StateFilter(FSMRegistryUser.fill_email))
+async def get_email(message: Message, state: FSMContext):
+    await state.update_data(email=message.text)
+    await message.answer(lx.WARNING_TEXTS["request_password"])
+    await state.set_state(FSMRegistryUser.fill_password)
+
+
+@dp.message(StateFilter(FSMRegistryUser.fill_password))
+async def save_user_data(message: Message, state: FSMContext):
+    user_data = await state.get_data()
+    await db.save_registry_user_data(user_tg_id=message.from_user.id,
+                                     username=user_data["username"],
+                                     user_email=user_data["email"],
+                                     user_password=message.text)
+    await message.answer(lx.WARNING_TEXTS["data_saved"])
+    await state.clear()
 
 
 # Хэндлер для неотловленных сообщений

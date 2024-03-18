@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from models.models_core import users, events
 from models.config import settings
 
+from calendar_bot_db.support_funcs import hash_password
 from typing import Optional
 
 async_engine = create_async_engine(url=settings.DATABASE_URL_asyncpg,
@@ -109,3 +110,24 @@ async def delete_event(user_tg_id: int, event_id: int) -> None:
         print(f"Произошла ошибка в delete_event {e}")
         return None
 
+
+async def save_registry_user_data(user_tg_id: int,
+                                  username: Optional[str] = None,
+                                  user_email: Optional[str] = None,
+                                  user_password: Optional[str] = None) -> None:
+    try:
+        async with async_engine.begin() as connection:
+            update_values = {}
+            if username is not None:
+                update_values["username"] = username
+            if user_email is not None:
+                update_values["email"] = user_email
+            if user_password is not None:
+                update_values["password_hash"] = hash_password(user_password)
+
+            await connection.execute(
+                update(users).where(users.c.user_tg_id == user_tg_id).
+                values(**update_values))
+    except Exception as e:
+        print(f"Произошла ошибка в enter_user_data {e}")
+        return None

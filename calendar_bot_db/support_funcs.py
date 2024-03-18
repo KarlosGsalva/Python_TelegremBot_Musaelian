@@ -1,3 +1,4 @@
+from bcrypt import hashpw, gensalt
 from datetime import time
 
 
@@ -9,4 +10,10 @@ def convert_str_to_time(chosen_time: str):
 def split_callback_to_name_id(callback: str) -> dict:
     event_name, event_id = callback.split("_")
     return {"event_name": event_name, "event_id": int(event_id)}
+
+
+def hash_password(password: str) -> str:
+    password = password.encode("utf-8")
+    salt = gensalt()
+    return hashpw(password, salt).decode("utf-8")
 

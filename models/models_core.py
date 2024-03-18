@@ -11,7 +11,7 @@ users = Table(
     Column("user_tg_id", Integer(), unique=True),
     Column("username", String(40)),
     Column("email", String(40)),
-    Column("password_hash", String(50)),
+    Column("password_hash", String(150)),
 )
 
 events = Table(

@@ -26,3 +26,8 @@ class FSMMenuOptions(StatesGroup):
     read_event = State()
     delete_event = State()
 
+
+class FSMRegistryUser(StatesGroup):
+    fill_username = State()
+    fill_email = State()
+    fill_password = State()
