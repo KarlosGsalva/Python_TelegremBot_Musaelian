@@ -9,7 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram_dialog import DialogManager, Dialog, setup_dialogs
 
-from async_db_back import convert_str_to_time, split_callback_to_name_id
+from support_funcs import convert_str_to_time, split_callback_to_name_id
 from dialog_choose_dates import set_calendar_window, edit_calendar_window
 from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp
 from models import database as db
