@@ -3,26 +3,16 @@ from datetime import date, time
 from sqlalchemy import select, update, and_, delete
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from models.models_core import metadata_obj, users, events
+from models.models_core import users, events
 from models.config import settings
+
+from typing import Optional
 
 async_engine = create_async_engine(url=settings.DATABASE_URL_asyncpg,
                                    echo=True, pool_size=5, max_overflow=10)
 
 
-async def async_main() -> None:
-    async with async_engine.begin() as connection:
-        await connection.run_sync(metadata_obj.create_all)
-
-        await connection.execute(
-            users.insert(), {
-                "user_tg_id": 1, "username": "test",
-                "password_hash": "qwerty"})
-
-        await async_engine.dispose()
-
-
-async def check_and_create_exists_user(user_tg_id: int) -> None:
+async def check_or_create_exists_user(user_tg_id: int) -> None:
     async with async_engine.begin() as connection:
         stmt = select(users).where(users.c.user_tg_id == user_tg_id)
         result = await connection.execute(stmt)
@@ -40,10 +30,10 @@ async def write_event_in_db(user_tg_id: int,
                             event_name: str,
                             event_date: date,
                             event_time: time,
-                            event_details: str):
+                            event_details: str) -> None:
     try:
         async with async_engine.begin() as connection:
-            await check_and_create_exists_user(user_tg_id)
+            await check_or_create_exists_user(user_tg_id)
 
             await connection.execute(events.insert().values(
                 user_tg_id=user_tg_id, event_name=event_name,
@@ -54,20 +44,21 @@ async def write_event_in_db(user_tg_id: int,
         return None
 
 
-async def gather_all_events_db(user_tg_id: int) -> dict | None:
+async def gather_all_events_db(user_tg_id: int) -> Optional[dict]:
     try:
         async with async_engine.begin() as connection:
             result = await connection.execute(
                 select(events).where(events.c.user_tg_id == user_tg_id))
+
+            # Переделываем словарь, чтобы обращаться к событиям по id
             events_data: dict = {event["id"]: event for event in result.mappings().all()}
-            # print(events_data)
             return events_data
     except Exception as e:
         print(f"Произошла ошибка в gather_all_events_db {e}")
         return None
 
 
-async def read_choosed_event(user_tg_id: int, event_id: int) -> str | None:
+async def read_selected_event(user_tg_id: int, event_id: int) -> Optional[str]:
     try:
         events: dict = await gather_all_events_db(user_tg_id)
 
@@ -82,51 +73,29 @@ async def read_choosed_event(user_tg_id: int, event_id: int) -> str | None:
         return None
 
 
-async def rename_event(user_tg_id: int, event_id: int, new_event_name: str) -> None:
+async def change_event(user_tg_id: int, event_id: int,
+                       new_event_name: Optional[str] = None,
+                       new_event_date: Optional[date] = None,
+                       new_event_time: Optional[time] = None,
+                       new_event_details: Optional[str] = None) -> None:
     try:
         async with async_engine.begin() as connection:
+            update_values: dict = {}
+            if new_event_name is not None:
+                update_values["event_name"] = new_event_name
+            if new_event_date is not None:
+                update_values["event_date"] = new_event_date
+            if new_event_time is not None:
+                update_values["event_time"] = new_event_time
+            if new_event_details is not None:
+                update_values["event_details"] = new_event_details
+
             await connection.execute(
                 update(events).where(and_(events.c.id == event_id,
                                           events.c.user_tg_id == user_tg_id)).
-                values(event_name=new_event_name))
+                values(**update_values))
     except Exception as e:
-        print(f"Произошла ошибка в rename_event {e}")
-        return None
-
-
-async def change_event_date(user_tg_id: int, event_id: int, new_event_date: date) -> None:
-    try:
-        async with async_engine.begin() as connection:
-            await connection.execute(
-                update(events).where(and_(events.c.user_tg_id == user_tg_id,
-                                          events.c.id == event_id)).
-                values(event_date=new_event_date))
-    except Exception as e:
-        print(f"Произошла ошибка в change_event_date {e}")
-        return None
-
-
-async def change_event_time(user_tg_id: int, event_id: int, new_event_time: time):
-    try:
-        async with async_engine.begin() as connection:
-            await connection.execute(
-                update(events).where(and_(events.c.user_tg_id == user_tg_id,
-                                          events.c.id == event_id)).
-                values(event_time=new_event_time))
-    except Exception as e:
-        print(f"Произошла ошибка в change_event_time {e}")
-        return None
-
-
-async def change_event_details(user_tg_id: int, event_id: int, event_details: str) -> None:
-    try:
-        async with async_engine.begin() as connection:
-            await connection.execute(
-                update(events).where(and_(events.c.user_tg_id == user_tg_id,
-                                          events.c.id == event_id)).
-                values(event_details=event_details))
-    except Exception as e:
-        print(f"Произошла ошибка в change_event_time {e}")
+        print(f"Произошла ошибка в delete_event {e}")
         return None
 
 
@@ -140,6 +109,3 @@ async def delete_event(user_tg_id: int, event_id: int) -> None:
         print(f"Произошла ошибка в delete_event {e}")
         return None
 
-
-# asyncio.run(async_main())
-# asyncio.run(gather_all_events_db(1074713049))

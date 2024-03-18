@@ -5,16 +5,16 @@ from aiogram.fsm.storage.base import StorageKey
 from aiogram.types import CallbackQuery
 from aiogram_dialog.widgets.kbd import Calendar, ManagedCalendar
 from aiogram_dialog.widgets.text import Const
-from aiogram_dialog import DialogManager, Window, Dialog, setup_dialogs
+from aiogram_dialog import DialogManager, Window
 
-from states import FSMEditEvent, FSMCreateEvent, storage, dp
-from async_db_back import change_event_point
+from states import FSMEditEvent, FSMCreateEvent, storage
+from typing import Optional
 from models import database as db
 import lexicon as lx
 import keyboards as kb
 
 
-def _make_key(callback: CallbackQuery) -> StorageKey | None:
+def _make_key(callback: CallbackQuery) -> Optional[StorageKey]:
     try:
         key = StorageKey(bot_id=callback.bot.id,
                          chat_id=callback.message.chat.id,
@@ -60,7 +60,6 @@ async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
 
         await state.update_data(event_date=timestamp)
         user_data = await state.get_data()
-        print(user_data)
         await manager.done()
 
         # Ответ пользователю с выбранной датой
@@ -68,8 +67,8 @@ async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
         await callback.message.answer(f"Вы выбрали новую дату: {date_for_show}")
 
         # Вносим изменения в событие
-        await db.change_event_date(user_data["user_tg_id"], user_data["event_id"],
-                                   user_data["event_date"])
+        await db.change_event(user_data["user_tg_id"], user_data["event_id"],
+                              new_event_date=user_data["event_date"])
 
         # Оповещаем о внесении изменений, обнуляем state
         await callback.message.answer(lx.WARNING_TEXTS["event_date_edited"])

@@ -1,16 +1,15 @@
+import asyncio
+
 from aiogram import Bot, F
+from aiogram.methods import DeleteWebhook
 
 from aiogram.types import BotCommand, Message, CallbackQuery
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram_dialog import DialogManager, Dialog, setup_dialogs
-from datetime import date, time, datetime
 
-from async_db_back import (convert_str_to_time,
-                           split_callback_to_name_id,
-                           change_event_point,
-                           delete_event)
+from async_db_back import convert_str_to_time, split_callback_to_name_id
 from dialog_choose_dates import set_calendar_window, edit_calendar_window
 from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp
 from models import database as db
@@ -128,7 +127,7 @@ async def show_event(message: Message, state: FSMContext):
 async def show_requested_event(callback: CallbackQuery, state: FSMContext):
     event_id: int = split_callback_to_name_id(callback.data)["event_id"]
     user_tg_id: int = callback.from_user.id
-    event_data = await db.read_choosed_event(user_tg_id, event_id)
+    event_data = await db.read_selected_event(user_tg_id, event_id)
     await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(lx.WARNING_TEXTS["show_event"])
     await callback.message.answer(event_data)
@@ -156,6 +155,7 @@ async def choose_event_point_for_edit(callback: CallbackQuery, state: FSMContext
 
 @dp.callback_query(F.data == "change_event_name", StateFilter(FSMEditEvent.choose_event_point))
 async def change_event_name(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(text=lx.WARNING_TEXTS["request_new_event_name"])
     await state.set_state(FSMEditEvent.edit_event_name)
 
@@ -164,7 +164,8 @@ async def change_event_name(callback: CallbackQuery, state: FSMContext):
 async def edit_event_name(message: Message, state: FSMContext):
     new_event_name = message.text
     user_data = await state.get_data()
-    await db.rename_event(user_data["user_tg_id"], user_data["event_id"], new_event_name)
+    await db.change_event(user_data["user_tg_id"], user_data["event_id"],
+                          new_event_name=new_event_name)
     await message.answer(lx.WARNING_TEXTS["event_name_edited"])
     await state.clear()
 
@@ -172,12 +173,14 @@ async def edit_event_name(message: Message, state: FSMContext):
 @dp.callback_query(F.data == "change_event_date", StateFilter(FSMEditEvent.choose_event_point))
 async def get_new_event_date(callback: CallbackQuery, state: FSMContext,
                              dialog_manager: DialogManager):
+    await callback.answer()  # Подтверждаем получение callback
     await dialog_manager.start(FSMEditEvent.edit_event_date)
 
 
 @dp.callback_query(F.data == "change_event_time", StateFilter(FSMEditEvent.choose_event_point))
 async def get_new_event_time(callback: CallbackQuery, state: FSMContext):
     keyboard = kb.time_keyboard()
+    await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(text=lx.WARNING_TEXTS["request_new_event_time"],
                                   reply_markup=keyboard)
     await state.set_state(FSMEditEvent.edit_event_time)
@@ -193,7 +196,8 @@ async def edit_event_time(callback: CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
 
     # Изменяем событие
-    await db.change_event_time(user_data["user_tg_id"], user_data["event_id"], new_event_time)
+    await db.change_event(user_data["user_tg_id"], user_data["event_id"],
+                          new_event_time=new_event_time)
 
     # Уведомляем об успешном изменении данных
     await callback.message.answer(text=f"Новое время события: {new_event_time}")
@@ -219,7 +223,8 @@ async def set_new_event_details(message: Message, state: FSMContext):
     user_data = await state.get_data()
 
     # Изменяем событие
-    await db.change_event_details(user_data["user_tg_id"], user_data["event_id"], new_event_details)
+    await db.change_event(user_data["user_tg_id"], user_data["event_id"],
+                          new_event_details=new_event_details)
 
     # Уведомляем об успешном изменении данных
     await message.answer(text=f"Новое описание события: {new_event_details}")
@@ -250,7 +255,7 @@ async def make_delete_event(callback: CallbackQuery, state: FSMContext):
 # Хэндлер для показа всех событий
 @dp.message(Command(commands=["5"]), StateFilter(default_state))
 async def show_all_events(message: Message):
-    keyboard = kb.make_events_as_buttons()
+    keyboard = await kb.make_events_as_buttons(message.from_user.id)
     await message.answer(lx.WARNING_TEXTS["show_all_events"],
                          reply_markup=keyboard)
 
@@ -268,6 +273,16 @@ async def echo(callback: CallbackQuery):
     await callback.answer()
 
 
-if __name__ == '__main__':
+async def main():
+    print(f"{10 * '-'} START {10 * '-'}")
     dp.startup.register(set_main_menu)
-    dp.run_polling(bot)
+    await bot(DeleteWebhook(drop_pending_updates=True))
+    await dp.start_polling(bot)
+
+
+if __name__ == '__main__':
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print(f"{10 * '-'} KeyboardInterrupt {10 * '-'}")
+        exit()
