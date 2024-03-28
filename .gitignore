@@ -7,3 +7,4 @@ venv/
 /random_tasks.py
 /examples.py
 /bot_token.py
+/calendar_admin/calendar_admin/settings.py
