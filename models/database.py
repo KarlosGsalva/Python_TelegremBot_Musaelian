@@ -1,9 +1,10 @@
-from datetime import date, time
+from datetime import date as dt, time
 
 from sqlalchemy import select, update, and_, delete
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.sql import func
 
-from models.models_core import users, events
+from models.models_core import users, events, botstatistics
 from models.config import settings
 
 from calendar_bot_db.support_funcs import hash_password
@@ -29,7 +30,7 @@ async def check_or_create_exists_user(user_tg_id: int) -> None:
 
 async def write_event_in_db(user_tg_id: int,
                             event_name: str,
-                            event_date: date,
+                            event_date: dt,
                             event_time: time,
                             event_details: str) -> None:
     try:
@@ -64,7 +65,7 @@ async def read_selected_event(user_tg_id: int, event_id: int) -> Optional[str]:
         events: dict = await gather_all_events_db(user_tg_id)
 
         event_name = f'Событие: {events[event_id]["event_name"]}'
-        event_date = f'Дата события: {date.strftime(events[event_id]["event_date"], "%d.%m.%Y")}'
+        event_date = f'Дата события: {dt.strftime(events[event_id]["event_date"], "%d.%m.%Y")}'
         event_time = f'Время события: {time.strftime(events[event_id]["event_time"], "%H:%M")}'
         event_details = f'Описание: {events[event_id]["event_details"]}'
 
@@ -76,7 +77,7 @@ async def read_selected_event(user_tg_id: int, event_id: int) -> Optional[str]:
 
 async def change_event(user_tg_id: int, event_id: int,
                        new_event_name: Optional[str] = None,
-                       new_event_date: Optional[date] = None,
+                       new_event_date: Optional[dt] = None,
                        new_event_time: Optional[time] = None,
                        new_event_details: Optional[str] = None) -> None:
     try:
@@ -130,4 +131,55 @@ async def save_registry_user_data(user_tg_id: int,
                 values(**update_values))
     except Exception as e:
         print(f"Произошла ошибка в enter_user_data {e}")
+        return None
+
+
+async def update_statistics(event_count: bool = False,
+                            edited_events: bool = False,
+                            canceled_events: bool = False) -> None:
+    current_date = dt.today()
+    try:
+        stat_to_update = {
+            "event_count": event_count,
+            "edited_events": edited_events,
+            "canceled_events": canceled_events
+        }
+
+        stmt_to_update = []
+        for stat, value in stat_to_update.items():
+            if value:
+                stmt = (
+                    update(botstatistics).
+                    where(botstatistics.c.date == current_date).
+                    values({stat: botstatistics.c[stat] + 1})
+                )
+                stmt_to_update.append(stmt)
+
+        user_count_subquery = select(func.count()).select_from(users)
+        update_user_count_stmt = (update(botstatistics).values(
+            user_count=user_count_subquery.scalar_subquery())
+        )
+
+        stmt_to_update.append(update_user_count_stmt)
+
+        async with async_engine.begin() as connection:
+            result = await connection.execute(
+                select(func.count()).select_from(botstatistics).
+                where(botstatistics.c.date == current_date)
+            )
+            exists = result.scalar_one()
+            if not exists:
+                await connection.execute(
+                    botstatistics.insert().
+                    values(date=current_date,
+                           user_count=0,
+                           event_count=0,
+                           edited_events=0,
+                           canceled_events=0)
+                )
+            for stmt in stmt_to_update:
+                await connection.execute(stmt)
+
+    except Exception as e:
+        print(f"Произошла ошибка в update_statistics {e}")
         return None

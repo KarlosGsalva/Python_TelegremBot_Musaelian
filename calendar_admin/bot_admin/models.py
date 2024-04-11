@@ -1,4 +1,7 @@
 from django.db import models
+from django.utils import timezone
+import logging
+logger = logging.getLogger(__name__)
 
 
 class User(models.Model):
@@ -31,17 +34,16 @@ class Event(models.Model):
 
 
 class BotStatistics(models.Model):
-    user_tg_id = models.OneToOneField(User, to_field="user_tg_id",
-                                      db_column="user_tg_id",
-                                      on_delete=models.CASCADE)
     date = models.DateField()
-    user_count = models.PositiveIntegerField()
-    event_count = models.PositiveIntegerField()
-    edited_events = models.PositiveIntegerField()
-    canceled_events = models.PositiveIntegerField()
+    user_count = models.PositiveIntegerField(default=0)
+    event_count = models.PositiveIntegerField(default=0)
+    edited_events = models.PositiveIntegerField(default=0)
+    canceled_events = models.PositiveIntegerField(default=0)
 
     class Meta:
         db_table = "botstatistics"
+        verbose_name = "botstatistics"
+        verbose_name_plural = "botstatistics"
 
     def __str__(self):
-        return str(self.user_tg_id)
+        return str(self.date)

@@ -70,6 +70,9 @@ async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
         await db.change_event(user_data["user_tg_id"], user_data["event_id"],
                               new_event_date=user_data["event_date"])
 
+        # Добавляем в статистику
+        await db.update_statistics(edited_events=True)
+
         # Оповещаем о внесении изменений, обнуляем state
         await callback.message.answer(lx.WARNING_TEXTS["event_date_edited"])
         await state.clear()

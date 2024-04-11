@@ -94,7 +94,7 @@ async def process_event_date(callback: CallbackQuery, state: FSMContext):
     await state.set_state(FSMCreateEvent.fill_event_details)
 
 
-# Забираем описание и записываем событие в файл
+# Забираем описание и записываем событие в БД
 @dp.message(StateFilter(FSMCreateEvent.fill_event_details))
 async def write_event_details(message: Message, state: FSMContext):
     await state.update_data(details=message.text)
@@ -109,6 +109,7 @@ async def write_event_details(message: Message, state: FSMContext):
 
     # Записываем в БД
     await db.write_event_in_db(user_tg_id, event_name, event_date, event_time, event_details)
+    await db.update_statistics(event_count=True)
     await message.answer(lx.WARNING_TEXTS["event_made"])
     await state.clear()
 
@@ -164,8 +165,13 @@ async def change_event_name(callback: CallbackQuery, state: FSMContext):
 async def edit_event_name(message: Message, state: FSMContext):
     new_event_name = message.text
     user_data = await state.get_data()
+
+    # Изменяем событие
     await db.change_event(user_data["user_tg_id"], user_data["event_id"],
                           new_event_name=new_event_name)
+
+    # Добавляем в статистику
+    await db.update_statistics(edited_events=True)
     await message.answer(lx.WARNING_TEXTS["event_name_edited"])
     await state.clear()
 
@@ -199,6 +205,9 @@ async def edit_event_time(callback: CallbackQuery, state: FSMContext):
     await db.change_event(user_data["user_tg_id"], user_data["event_id"],
                           new_event_time=new_event_time)
 
+    # Добавляем в статистику
+    await db.update_statistics(edited_events=True)
+
     # Уведомляем об успешном изменении данных
     await callback.message.answer(text=f"Новое время события: {new_event_time}")
     await callback.message.answer(lx.WARNING_TEXTS["event_time_edited"])
@@ -226,6 +235,9 @@ async def set_new_event_details(message: Message, state: FSMContext):
     await db.change_event(user_data["user_tg_id"], user_data["event_id"],
                           new_event_details=new_event_details)
 
+    # Добавляем в статистику
+    await db.update_statistics(edited_events=True)
+
     # Уведомляем об успешном изменении данных
     await message.answer(text=f"Новое описание события: {new_event_details}")
     await message.answer(lx.WARNING_TEXTS["event_details_edited"])
@@ -248,6 +260,9 @@ async def make_delete_event(callback: CallbackQuery, state: FSMContext):
     event_name = split_callback_to_name_id(callback.data)["event_name"]
     event_id = split_callback_to_name_id(callback.data)["event_id"]
     await db.delete_event(callback.from_user.id, int(event_id))
+
+    # Добавляем в статистику
+    await db.update_statistics(canceled_events=True)
     await callback.message.answer(text=f"Событие {event_name} удалено.")
     await state.clear()
 

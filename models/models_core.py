@@ -27,7 +27,6 @@ events = Table(
 botstatistics = Table(
     "botstatistics", metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("user_tg_id", Integer, ForeignKey("users.user_tg_id")),
     Column("date", Date, default=func.current_date()),
     Column("user_count", Integer, CheckConstraint("user_count >= 0")),
     Column("event_count", Integer, CheckConstraint("event_count >= 0")),

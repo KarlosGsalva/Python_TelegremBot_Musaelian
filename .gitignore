@@ -8,3 +8,4 @@ venv/
 /examples.py
 /bot_token.py
 /calendar_admin/calendar_admin/settings.py
+/calendar_admin/debug.log

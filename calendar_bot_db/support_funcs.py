@@ -8,7 +8,7 @@ def convert_str_to_time(chosen_time: str):
 
 
 def split_callback_to_name_id(callback: str) -> dict:
-    event_name, event_id = callback.split("_")
+    event_name, event_id = callback.split("__")
     return {"event_name": event_name, "event_id": int(event_id)}
 
 

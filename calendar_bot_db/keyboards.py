@@ -44,7 +44,7 @@ async def make_events_as_buttons(user_tg_id: int) -> Optional[InlineKeyboardMark
 
         for detail in events.values():
             button = InlineKeyboardButton(text=detail["event_name"],
-                                          callback_data=f"{detail['event_name']}_{detail['id']}")
+                                          callback_data=f"{detail['event_name']}__{detail['id']}")
             buttons.append(button)
 
         buttons.append(cancel_button)
