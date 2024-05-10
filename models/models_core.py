@@ -50,7 +50,3 @@ meeting = Table(
     Column("participants", String),
     Column("status", meeting_status_enum, default="PD", nullable=False)
 )
-
-
-
-
