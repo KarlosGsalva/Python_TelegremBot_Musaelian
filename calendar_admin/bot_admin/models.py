@@ -18,7 +18,8 @@ class User(models.Model):
 
 
 class Event(models.Model):
-    user_tg_id = models.OneToOneField(User, to_field="user_tg_id",
+    user_tg_id = models.OneToOneField(User,
+                                      to_field="user_tg_id",
                                       db_column="user_tg_id",
                                       on_delete=models.CASCADE)
     event_name = models.CharField(unique=True)
@@ -47,3 +48,28 @@ class BotStatistics(models.Model):
 
     def __str__(self):
         return str(self.date)
+
+
+class Meeting(models.Model):
+    class MeetingStatus(models.TextChoices):
+        CONFIRMED = "CF", "Confirmed"
+        CANCELED = "CL", "Canceled"
+        PENDING = "PD", "Pending"
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    date = models.DateField()
+    time = models.TimeField()
+    planner = models.CharField()
+    participants = models.CharField()
+    status = models.CharField(max_length=3,
+                              choices=MeetingStatus.choices,
+                              default=MeetingStatus.PENDING)
+
+    class Meta:
+        db_table = "meeting"
+        verbose_name = "meeting"
+        verbose_name_plural = "meetings"
+
+    def __str__(self):
+        return (f"{self.user.username} - {self.event.event_name}"
+                f"{self.date} - {self.time}")
