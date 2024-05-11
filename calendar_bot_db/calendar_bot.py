@@ -1,6 +1,7 @@
 import asyncio
+import logging
 
-from aiogram import Bot, F
+from aiogram import Bot, Dispatcher, F
 from aiogram.methods import DeleteWebhook
 
 from aiogram.types import BotCommand, Message, CallbackQuery
@@ -9,17 +10,48 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram_dialog import DialogManager, Dialog, setup_dialogs
 
-from support_funcs import convert_str_to_time, split_callback_to_name_id
+from calendar_bot_db.models.config import settings, storage
+from calendar_bot_db.models import crud_sqla_core as db
+
+from colorlog import ColoredFormatter
+
+from services import convert_str_to_time, split_callback_to_name_id
 from dialog_choose_dates import set_calendar_window, edit_calendar_window
-from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, FSMRegistryUser, dp
-from models import database as db
+from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, FSMRegistryUser
 
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
-import bot_token  # модуль с токеном бота
 
-BOT_TOKEN = bot_token.BOT_TOKEN
+# ------ настройка логов ---------
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
+
+color_formatter = ColoredFormatter(
+    "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s%(reset)s",
+    datefmt='%Y-%m-%d %H:%M:%S',
+    reset=True,
+    log_colors={
+        'DEBUG': 'yellow',
+        'INFO': 'green',
+        'WARNING': 'cyan',
+        'ERROR': 'red',
+        'CRITICAL': 'red,bg_white',
+    },
+    secondary_log_colors={})
+
+for handler in logging.root.handlers:
+    handler.setFormatter(color_formatter)
+
+logger = logging.getLogger(__name__)
+
+# ---------------
+
+BOT_TOKEN = settings.bot_token.get_secret_value()
 bot = Bot(token=BOT_TOKEN)
+
+dp = Dispatcher(storage=storage)
 
 # Регистрируем окно в диалоге, диалог в диспетчере
 dialog_create_state = Dialog(set_calendar_window)

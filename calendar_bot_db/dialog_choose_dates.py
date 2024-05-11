@@ -7,9 +7,10 @@ from aiogram_dialog.widgets.kbd import Calendar, ManagedCalendar
 from aiogram_dialog.widgets.text import Const
 from aiogram_dialog import DialogManager, Window
 
-from states import FSMEditEvent, FSMCreateEvent, storage
+from states import FSMEditEvent, FSMCreateEvent
 from typing import Optional
-from models import database as db
+from calendar_bot_db.models import crud_sqla_core as db
+from calendar_bot_db.models.config import storage
 import lexicon as lx
 import keyboards as kb
 

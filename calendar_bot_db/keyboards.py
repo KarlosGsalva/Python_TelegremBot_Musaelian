@@ -2,7 +2,7 @@ from aiogram.utils.keyboard import (InlineKeyboardButton,
                                     InlineKeyboardMarkup,
                                     InlineKeyboardBuilder)
 
-from models import database as db
+from calendar_bot_db.models import crud_sqla_core as db
 from typing import Optional
 
 

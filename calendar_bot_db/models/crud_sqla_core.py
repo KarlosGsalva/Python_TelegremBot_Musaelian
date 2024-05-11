@@ -1,17 +1,13 @@
 from datetime import date as dt, time
 
 from sqlalchemy import select, update, and_, delete
-from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.sql import func
 
-from models.models_core import users, events, botstatistics
-from models.config import settings
+from calendar_bot_db.models.models_core import users, events, botstatistics
+from calendar_bot_db.models.config import async_engine
 
-from calendar_bot_db.support_funcs import hash_password
+from calendar_bot_db.services import hash_password
 from typing import Optional
-
-async_engine = create_async_engine(url=settings.DATABASE_URL_asyncpg,
-                                   echo=True, pool_size=5, max_overflow=10)
 
 
 async def check_or_create_exists_user(user_tg_id: int) -> None:

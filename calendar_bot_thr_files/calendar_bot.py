@@ -9,13 +9,14 @@ from aiogram_dialog import DialogManager, Dialog, setup_dialogs
 from async_file_back import (write_event_in_json_file,  # модуль с бэкэндом
                              read_event, change_event_point,
                              format_event_data, delete_event)
+from calendar_bot_db.models.config import settings
 from dialog_choose_dates import set_calendar_window, edit_calendar_window
 from states import FSMCreateEvent, FSMEditEvent, FSMMenuOptions, dp
 import keyboards as kb  # модуль с клавиатурами
 import lexicon as lx  # модуль с текстами
-import bot_token  # модуль с токеном бота
 
-BOT_TOKEN = bot_token.BOT_TOKEN
+
+BOT_TOKEN = settings.bot_token.get_secret_value()
 bot = Bot(token=BOT_TOKEN)
 
 # Регистрируем окно в диалоге, диалог в диспетчере

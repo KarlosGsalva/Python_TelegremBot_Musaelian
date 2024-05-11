@@ -1,6 +1,6 @@
 from logging.config import fileConfig
-from models.models_core import users, events  # noqa
-from models.models_core import metadata_obj
+from calendar_bot_db.models.models_core import users, events  # noqa
+from calendar_bot_db.models.models_core import metadata_obj
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -8,7 +8,7 @@ from sqlalchemy import pool
 from dotenv import load_dotenv
 load_dotenv()
 from alembic import context
-from models.config import settings
+from calendar_bot_db.models.config import settings
 
 config = context.config
 
