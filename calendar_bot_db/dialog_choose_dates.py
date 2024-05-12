@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 
 from aiogram.fsm.context import FSMContext
@@ -7,12 +8,15 @@ from aiogram_dialog.widgets.kbd import Calendar, ManagedCalendar
 from aiogram_dialog.widgets.text import Const
 from aiogram_dialog import DialogManager, Window
 
-from states import FSMEditEvent, FSMCreateEvent
-from typing import Optional
+from calendar_bot_db.states import FSMEditEvent, FSMCreateEvent
 from calendar_bot_db.models import crud_sqla_core as db
 from calendar_bot_db.models.config import storage
-import lexicon as lx
-import keyboards as kb
+
+from typing import Optional
+import calendar_bot_db.lexicon as lx
+import calendar_bot_db.keyboards as kb
+
+logger = logging.getLogger(__name__)
 
 
 def _make_key(callback: CallbackQuery) -> Optional[StorageKey]:
@@ -22,7 +26,7 @@ def _make_key(callback: CallbackQuery) -> Optional[StorageKey]:
                          user_id=callback.from_user.id)
         return key
     except Exception as e:
-        print(f"Произошла ошибка в _make_key {e}")
+        logger.debug(f"Произошла ошибка в _make_key {e}")
         return None
 
 
@@ -33,8 +37,10 @@ async def select_date(callback: CallbackQuery, widget: ManagedCalendar,
 
         # Инициализируем контекст для сохранения даты и внесения изменений
         key = _make_key(callback)
+        logger.debug(f"key = {key}")
         state = FSMContext(storage=storage, key=key)
-        await state.update_data(event_date=timestamp)
+        logger.debug(f"state = {state}")
+        await state.update_data(event_date=date_for_show)
         await manager.done()
 
         # Ответ пользователю с выбранной датой
@@ -46,7 +52,7 @@ async def select_date(callback: CallbackQuery, widget: ManagedCalendar,
                                       reply_markup=kb.time_keyboard())
         await state.set_state(FSMCreateEvent.fill_event_time)
     except Exception as e:
-        print(f"Произошла ошибка в select_date {e}")
+        logger.debug(f"Произошла ошибка в select_date {e}")
         return None
 
 
@@ -78,7 +84,7 @@ async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
         await callback.message.answer(lx.WARNING_TEXTS["event_date_edited"])
         await state.clear()
     except Exception as e:
-        print(f"Произошла ошибка в edit_date {e}")
+        logger.debug(f"Произошла ошибка в edit_date {e}")
         return None
 
 # Создание виджета календаря

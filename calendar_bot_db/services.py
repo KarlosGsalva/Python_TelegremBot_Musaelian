@@ -1,3 +1,6 @@
+from aiogram import Bot
+from aiogram.types import BotCommandScopeAllPrivateChats, BotCommand
+
 from bcrypt import hashpw, gensalt
 from datetime import time
 
@@ -16,4 +19,21 @@ def hash_password(password: str) -> str:
     password = password.encode("utf-8")
     salt = gensalt()
     return hashpw(password, salt).decode("utf-8")
+
+
+async def set_main_menu_cmds(bot: Bot):
+    commands = [
+        BotCommand(command="start", description="Начать работу"),
+        BotCommand(command="1", description="Создать событие"),
+        BotCommand(command="2", description="Вывести подробности события"),
+        BotCommand(command="3", description="Изменить данные события"),
+        BotCommand(command="4", description="Удалить событие"),
+        BotCommand(command="5", description="Показать все события"),
+        BotCommand(command="6", description="Регистрация"),
+    ]
+    await bot.set_my_commands(
+        commands=commands,
+        scope=BotCommandScopeAllPrivateChats()
+    )
+
 
