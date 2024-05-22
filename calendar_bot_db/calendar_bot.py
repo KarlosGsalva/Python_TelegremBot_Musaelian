@@ -9,7 +9,7 @@ from calendar_bot_db.dialog_choose_dates import set_calendar_window, edit_calend
 from calendar_bot_db.models.config import settings, storage
 from calendar_bot_db.handlers import (strt_end_hdlrs, show_event_detail, show_events_hndl,
                                       register_hdlr, fill_form_hndl, edit_event_hndl,
-                                      delete_event_hndl, cancel_hdlrs)
+                                      delete_event_hndl, cancel_hdlrs, end_cap_hndl)
 
 
 from colorlog import ColoredFormatter
@@ -59,6 +59,7 @@ async def on_startup() -> None:
     setup_dialogs(dp)
 
     # Регистрируем роутеры
+    dp.include_router(strt_end_hdlrs.router)
     dp.include_router(cancel_hdlrs.router)
     dp.include_router(show_events_hndl.router)
     dp.include_router(show_event_detail.router)
@@ -66,7 +67,7 @@ async def on_startup() -> None:
     dp.include_router(fill_form_hndl.router)
     dp.include_router(edit_event_hndl.router)
     dp.include_router(delete_event_hndl.router)
-    dp.include_router(strt_end_hdlrs.router)
+    dp.include_router(end_cap_hndl.router)
 
     # Установка команд основного меню бота
     await set_main_menu_cmds(bot=bot)

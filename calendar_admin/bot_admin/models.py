@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,10 +19,10 @@ class User(models.Model):
 
 
 class Event(models.Model):
-    user_tg_id = models.OneToOneField(User,
-                                      to_field="user_tg_id",
-                                      db_column="user_tg_id",
-                                      on_delete=models.CASCADE)
+    user_tg_id = models.ForeignKey(User,
+                                   to_field="user_tg_id",
+                                   db_column="user_tg_id",
+                                   on_delete=models.CASCADE)
     event_name = models.CharField(unique=True)
     event_date = models.DateField(auto_now_add=True)
     event_time = models.TimeField(auto_now_add=True)
@@ -55,6 +56,7 @@ class Meeting(models.Model):
         CONFIRMED = "CF", "Confirmed"
         CANCELED = "CL", "Canceled"
         PENDING = "PD", "Pending"
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     date = models.DateField()

@@ -26,16 +26,3 @@ async def process_start_command(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(WTEXT["hello"])
     await message.answer(WTEXT["show_menu"])
-
-
-# Хэндлер для неотловленных сообщений
-@router.message(StateFilter(default_state))
-async def echo(message: Message):
-    await message.reply(text="Извините, я вас не понимать")
-
-
-# Хэндлер для неотловленных callback
-@router.callback_query(StateFilter(default_state))
-async def echo(callback: CallbackQuery):
-    await callback.message.answer(text="Извините, я вас не понимать")
-    await callback.answer()
