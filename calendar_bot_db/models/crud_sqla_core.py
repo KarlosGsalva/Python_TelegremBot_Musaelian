@@ -1,4 +1,7 @@
-from datetime import date as dt, time
+import logging
+
+from datetime import time
+from datetime import datetime as dt
 
 from sqlalchemy import select, update, and_, delete
 from sqlalchemy.sql import func
@@ -8,6 +11,8 @@ from calendar_bot_db.models.config import async_engine
 
 from calendar_bot_db.services import hash_password
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 async def check_or_create_exists_user(user_tg_id: int) -> None:
@@ -19,17 +24,18 @@ async def check_or_create_exists_user(user_tg_id: int) -> None:
         if user is None:
             stmt = users.insert().values(user_tg_id=user_tg_id)
             await connection.execute(stmt)
-            print("user was created")
+            logger.debug("user was created")
         else:
-            print("user already exists")
+            logger.debug("user already exists")
 
 
 async def write_event_in_db(user_tg_id: int,
                             event_name: str,
-                            event_date: dt,
+                            event_date: str,
                             event_time: time,
                             event_details: str) -> None:
     try:
+        event_date = dt.strptime(event_date, "%d.%m.%Y")
         async with async_engine.begin() as connection:
             await check_or_create_exists_user(user_tg_id)
 
@@ -38,7 +44,7 @@ async def write_event_in_db(user_tg_id: int,
                 event_date=event_date, event_time=event_time,
                 event_details=event_details))
     except Exception as e:
-        print(f"Произошла ошибка в write_event_in_db {e}")
+        logger.debug(f"Произошла ошибка в write_event_in_db {e}")
         return None
 
 
@@ -52,7 +58,7 @@ async def gather_all_events_db(user_tg_id: int) -> Optional[dict]:
             events_data: dict = {event["id"]: event for event in result.mappings().all()}
             return events_data
     except Exception as e:
-        print(f"Произошла ошибка в gather_all_events_db {e}")
+        logger.debug(f"Произошла ошибка в gather_all_events_db {e}")
         return None
 
 
@@ -67,7 +73,7 @@ async def read_selected_event(user_tg_id: int, event_id: int) -> Optional[str]:
 
         return '\n'.join([event_name, event_date, event_time, event_details])
     except Exception as e:
-        print(f"Произошла ошибка в read_choosed_event {e}")
+        logger.debug(f"Произошла ошибка в read_choosed_event {e}")
         return None
 
 
@@ -93,7 +99,7 @@ async def change_event(user_tg_id: int, event_id: int,
                                           events.c.user_tg_id == user_tg_id)).
                 values(**update_values))
     except Exception as e:
-        print(f"Произошла ошибка в delete_event {e}")
+        logger.debug(f"Произошла ошибка в delete_event {e}")
         return None
 
 
@@ -104,7 +110,7 @@ async def delete_event(user_tg_id: int, event_id: int) -> None:
                 delete(events).where(and_(events.c.user_tg_id == user_tg_id,
                                           events.c.id == event_id)))
     except Exception as e:
-        print(f"Произошла ошибка в delete_event {e}")
+        logger.debug(f"Произошла ошибка в delete_event {e}")
         return None
 
 
@@ -126,7 +132,7 @@ async def save_registry_user_data(user_tg_id: int,
                 update(users).where(users.c.user_tg_id == user_tg_id).
                 values(**update_values))
     except Exception as e:
-        print(f"Произошла ошибка в enter_user_data {e}")
+        logger.debug(f"Произошла ошибка в enter_user_data {e}")
         return None
 
 
@@ -177,5 +183,5 @@ async def update_statistics(event_count: bool = False,
                 await connection.execute(stmt)
 
     except Exception as e:
-        print(f"Произошла ошибка в update_statistics {e}")
+        logger.debug(f"Произошла ошибка в update_statistics {e}")
         return None

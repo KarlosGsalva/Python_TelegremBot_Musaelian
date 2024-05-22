@@ -1,9 +1,13 @@
+import logging
+
 from aiogram.utils.keyboard import (InlineKeyboardButton,
                                     InlineKeyboardMarkup,
                                     InlineKeyboardBuilder)
 
 from calendar_bot_db.models import crud_sqla_core as db
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 # Создаем инлайн кнопку cancel
@@ -20,7 +24,7 @@ def _make_inline_keyboard(buttons: list[InlineKeyboardButton],
         ikb_builder.row(*buttons, width=width)
         return ikb_builder.as_markup()
     except Exception as e:
-        print(f"Произошла ошибка в _make_inline_keyboard {e}")
+        logger.debug(f"Произошла ошибка в _make_inline_keyboard {e}")
         return None
 
 
@@ -32,7 +36,7 @@ def time_keyboard() -> Optional[InlineKeyboardMarkup]:
         buttons.append(cancel_button)
         return _make_inline_keyboard(buttons)
     except Exception as e:
-        print(f"Произошла ошибка в time_keyboard {e}")
+        logger.debug(f"Произошла ошибка в time_keyboard {e}")
         return None
 
 
@@ -50,7 +54,7 @@ async def make_events_as_buttons(user_tg_id: int) -> Optional[InlineKeyboardMark
         buttons.append(cancel_button)
         return _make_inline_keyboard(buttons, width=1)
     except Exception as e:
-        print(f"Произошла ошибка в make_events_as_buttons {e}")
+        logger.debug(f"Произошла ошибка в make_events_as_buttons {e}")
         return None
 
 
@@ -64,6 +68,6 @@ def make_event_points_as_buttons() -> Optional[InlineKeyboardMarkup]:
                    cancel_button]
         return _make_inline_keyboard(buttons, width=1)
     except Exception as e:
-        print(f"Произошла ошибка в make_event_point_as_buttons {e}")
+        logger.debug(f"Произошла ошибка в make_event_point_as_buttons {e}")
         return None
 

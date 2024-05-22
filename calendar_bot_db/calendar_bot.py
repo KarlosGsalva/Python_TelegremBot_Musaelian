@@ -7,8 +7,9 @@ from aiogram_dialog import Dialog, setup_dialogs
 
 from calendar_bot_db.dialog_choose_dates import set_calendar_window, edit_calendar_window
 from calendar_bot_db.models.config import settings, storage
-from calendar_bot_db.handlers import (strt_cncl_end_hdlrs, show_event_detail, show_events_hndl,
-                                      register_hdlr, fill_form_hndl, edit_event_hndl, delete_event_hndl)
+from calendar_bot_db.handlers import (strt_end_hdlrs, show_event_detail, show_events_hndl,
+                                      register_hdlr, fill_form_hndl, edit_event_hndl,
+                                      delete_event_hndl, cancel_hdlrs)
 
 
 from colorlog import ColoredFormatter
@@ -58,20 +59,21 @@ async def on_startup() -> None:
     setup_dialogs(dp)
 
     # Регистрируем роутеры
+    dp.include_router(cancel_hdlrs.router)
     dp.include_router(show_events_hndl.router)
     dp.include_router(show_event_detail.router)
     dp.include_router(register_hdlr.router)
     dp.include_router(fill_form_hndl.router)
     dp.include_router(edit_event_hndl.router)
     dp.include_router(delete_event_hndl.router)
-    dp.include_router(strt_cncl_end_hdlrs.router)
+    dp.include_router(strt_end_hdlrs.router)
 
     # Установка команд основного меню бота
     await set_main_menu_cmds(bot=bot)
 
 
 async def main():
-    print(f"{10 * '-'} START {10 * '-'}")
+    logger.debug(f"{10 * '-'} START {10 * '-'}")
     await bot(DeleteWebhook(drop_pending_updates=True))
     await dp.start_polling(bot)
 
@@ -80,5 +82,5 @@ if __name__ == '__main__':
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(f"{10 * '-'} KeyboardInterrupt {10 * '-'}")
+        logger.debug(f"{10 * '-'} KeyboardInterrupt {10 * '-'}")
         exit()

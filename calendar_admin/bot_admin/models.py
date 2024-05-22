@@ -6,9 +6,9 @@ logger = logging.getLogger(__name__)
 
 class User(models.Model):
     user_tg_id = models.IntegerField(unique=True)
-    username = models.CharField(max_length=40)
-    email = models.CharField(max_length=40)
-    password_hash = models.CharField(max_length=150)
+    username = models.CharField(max_length=40, null=True)
+    email = models.CharField(max_length=40, null=True)
+    password_hash = models.CharField(max_length=150, null=True)
 
     class Meta:
         db_table = "users"

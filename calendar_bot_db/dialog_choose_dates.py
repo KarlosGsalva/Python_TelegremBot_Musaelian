@@ -33,7 +33,7 @@ def _make_key(callback: CallbackQuery) -> Optional[StorageKey]:
 async def select_date(callback: CallbackQuery, widget: ManagedCalendar,
                       manager: DialogManager, timestamp: date) -> None:
     try:
-        date_for_show = timestamp.strftime('%d.%m.%Y')
+        date_for_show = timestamp.strftime("%d.%m.%Y")
 
         # Инициализируем контекст для сохранения даты и внесения изменений
         key = _make_key(callback)
