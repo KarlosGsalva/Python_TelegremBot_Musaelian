@@ -23,9 +23,9 @@ class Event(models.Model):
                                    to_field="user_tg_id",
                                    db_column="user_tg_id",
                                    on_delete=models.CASCADE)
-    event_name = models.CharField(unique=True)
-    event_date = models.DateField(auto_now_add=True)
-    event_time = models.TimeField(auto_now_add=True)
+    event_name = models.CharField(max_length=100, unique=True)
+    event_date = models.DateField()
+    event_time = models.TimeField()
     event_details = models.TextField()
 
     class Meta:
@@ -57,21 +57,23 @@ class Meeting(models.Model):
         CANCELED = "CL", "Canceled"
         PENDING = "PD", "Pending"
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    organizer = models.ForeignKey(User,
+                                  on_delete=models.CASCADE,
+                                  null=True, blank=True,
+                                  related_name="organized_meetings")
+    participants = models.ManyToManyField(User, related_name="meetings")
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     date = models.DateField()
     time = models.TimeField()
-    planner = models.CharField()
-    participants = models.CharField()
-    status = models.CharField(max_length=3,
+    duration = models.DurationField(default="00:15:00")
+    status = models.CharField(max_length=2,
                               choices=MeetingStatus.choices,
                               default=MeetingStatus.PENDING)
 
     class Meta:
-        db_table = "meeting"
+        db_table = "meetings"
         verbose_name = "meeting"
         verbose_name_plural = "meetings"
 
     def __str__(self):
-        return (f"{self.user.username} - {self.event.event_name}"
-                f"{self.date} - {self.time}")
+        return f"{self.event.event_name} on {self.date} at {self.time}"

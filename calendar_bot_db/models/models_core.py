@@ -1,4 +1,4 @@
-from sqlalchemy import (Column, Integer, String, Table,
+from sqlalchemy import (Column, Integer, String, Table, Interval,
                         MetaData, Date, Time, ForeignKey, CheckConstraint)
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ENUM
@@ -46,7 +46,7 @@ meeting = Table(
     Column("event_name", None, ForeignKey("events.event_name"), nullable=False),
     Column("date", Date, nullable=False),
     Column("time", Time, nullable=False),
-    Column("planner", String),
+    Column("duration", Interval, nullable=False),
     Column("participants", String),
     Column("status", meeting_status_enum, default="PD", nullable=False)
 )
