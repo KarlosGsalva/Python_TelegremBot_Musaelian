@@ -65,7 +65,8 @@ class Meeting(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateField()
     time = models.TimeField()
-    duration = models.DurationField(default="00:15:00")
+    duration = models.DurationField(default="00:15:00"),
+    details = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=2,
                               choices=MeetingStatus.choices,
                               default=MeetingStatus.PENDING)

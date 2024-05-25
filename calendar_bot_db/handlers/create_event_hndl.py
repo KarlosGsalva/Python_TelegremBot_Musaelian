@@ -17,12 +17,13 @@ from calendar_bot_db.services import convert_str_to_time
 
 logger = logging.getLogger(__name__)
 
-router = Router(name="fill_form_router")
+router = Router(name="create_event_router")
 
 
 # Обрабатываем команду /1: Создать событие
 @router.message(Command(commands=["1"]), StateFilter(default_state))
 async def create_event(message: Message, state: FSMContext):
+    await state.clear()
     await message.answer(WTEXT["request_event_name"],
                          reply_markup=kb.cancel_markup)
     await state.set_state(FSMCreateEvent.fill_event_name)

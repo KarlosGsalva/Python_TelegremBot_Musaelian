@@ -46,6 +46,7 @@ meetings = Table(
     Column("date", Date, nullable=False),
     Column("time", Time, nullable=False),
     Column("duration", Interval, default="00:15:00", nullable=False),
+    Column("details", String, nullable=True),
     Column("status", meeting_status_enum, default="PD", nullable=False)
 )
 

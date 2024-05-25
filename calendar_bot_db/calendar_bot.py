@@ -5,11 +5,14 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.methods import DeleteWebhook
 from aiogram_dialog import Dialog, setup_dialogs
 
-from calendar_bot_db.dialog_choose_dates import set_calendar_window, edit_calendar_window
+from calendar_bot_db.dialog_choose_dates import (set_calendar_window_for_event,
+                                                 edit_event_date_calendar_window,
+                                                 set_calendar_window_for_meeting)
 from calendar_bot_db.models.config import settings, storage
-from calendar_bot_db.handlers import (strt_end_hdlrs, show_event_detail, show_events_hndl,
-                                      register_hdlr, fill_form_hndl, edit_event_hndl,
-                                      delete_event_hndl, cancel_hdlrs, end_cap_hndl)
+from calendar_bot_db.handlers import (start_cmd_hdlrs, show_event_detail, show_events_hndl,
+                                      register_hdlr, create_event_hndl, edit_event_hndl,
+                                      delete_event_hndl, cancel_hdlrs, end_cap_hndl,
+                                      create_meeting_hndl)
 
 
 from colorlog import ColoredFormatter
@@ -50,21 +53,24 @@ dp = Dispatcher(storage=storage)
 @dp.startup()
 async def on_startup() -> None:
     # Регистрируем окно в диалоге, диалог в диспетчере
-    dialog_create_state = Dialog(set_calendar_window)
-    dialog_edit_state = Dialog(edit_calendar_window)
-    dp.include_router(dialog_create_state)
-    dp.include_router(dialog_edit_state)
+    dialog_date_event_state = Dialog(set_calendar_window_for_event)
+    dialog_date_meeting_state = Dialog(set_calendar_window_for_meeting)
+    dialog_edit_date_state = Dialog(edit_event_date_calendar_window)
+    dp.include_router(dialog_date_event_state)
+    dp.include_router(dialog_date_meeting_state)
+    dp.include_router(dialog_edit_date_state)
 
     # Инициализация DialogManager
     setup_dialogs(dp)
 
     # Регистрируем роутеры
-    dp.include_router(strt_end_hdlrs.router)
+    dp.include_router(start_cmd_hdlrs.router)
     dp.include_router(cancel_hdlrs.router)
+    dp.include_router(create_meeting_hndl.router)
     dp.include_router(show_events_hndl.router)
     dp.include_router(show_event_detail.router)
     dp.include_router(register_hdlr.router)
-    dp.include_router(fill_form_hndl.router)
+    dp.include_router(create_event_hndl.router)
     dp.include_router(edit_event_hndl.router)
     dp.include_router(delete_event_hndl.router)
     dp.include_router(end_cap_hndl.router)
