@@ -63,6 +63,7 @@ class Meeting(models.Model):
                                   related_name="organized_meetings")
     participants = models.ManyToManyField(User, related_name="meetings")
     event = models.ForeignKey(Event, on_delete=models.CASCADE, null=True, blank=True)
+    meeting_name = models.CharField()
     date = models.DateField()
     time = models.TimeField()
     duration = models.DurationField(default="00:15:00"),
@@ -77,7 +78,7 @@ class Meeting(models.Model):
         verbose_name_plural = "meetings"
 
     def __str__(self):
-        return f"{self.event.event_name} on {self.date} at {self.time}"
+        return f"{self.meeting.event_name} on {self.date} at {self.time}"
 
 
 class MeetingParticipant(models.Model):

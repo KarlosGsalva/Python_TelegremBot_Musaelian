@@ -1,8 +1,20 @@
+import logging
+
 from aiogram import Bot
 from aiogram.types import BotCommandScopeAllPrivateChats, BotCommand
 
 from bcrypt import hashpw, gensalt
 from datetime import time
+
+logger = logging.getLogger(__name__)
+
+
+def is_number(num):
+    try:
+        return int(num)
+    except Exception as e:
+        logger.debug(f"Вместо длительности в минутах введено неверное значение {e}")
+        return False
 
 
 def convert_str_to_time(chosen_time: str):

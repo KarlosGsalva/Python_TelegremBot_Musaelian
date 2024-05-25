@@ -11,7 +11,7 @@ from aiogram_dialog import DialogManager, Window
 from calendar_bot_db.states import FSMEditEvent, FSMCreateEvent, FSMCreateMeeting
 from calendar_bot_db.models import crud_sqla_core as db
 from calendar_bot_db.models.config import storage
-import calendar_bot_db.lexicon as lx
+from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 import calendar_bot_db.keyboards as kb
 
 from typing import Optional
@@ -49,7 +49,7 @@ async def select_event_date(callback: CallbackQuery, widget: ManagedCalendar,
         await callback.message.answer(f"Вы выбрали: {date_for_show}")
 
         # Запрашиваем время события, выдаем клавиатуру, меняем state
-        await callback.message.answer(lx.WARNING_TEXTS["request_event_time"],
+        await callback.message.answer(WTEXT["request_event_time"],
                                       reply_markup=kb.time_keyboard())
         await state.set_state(FSMCreateEvent.fill_event_time)
     except Exception as e:
@@ -67,7 +67,7 @@ async def select_meeting_date(callback: CallbackQuery, widget: ManagedCalendar,
         logger.debug(f"key = {key}")
         state = FSMContext(storage=storage, key=key)
         logger.debug(f"state = {state}")
-        await state.update_data(event_date=date_for_show)
+        await state.update_data(meeting_date=date_for_show)
         await manager.done()
 
         # Ответ пользователю с выбранной датой
@@ -75,7 +75,7 @@ async def select_meeting_date(callback: CallbackQuery, widget: ManagedCalendar,
         await callback.message.answer(f"Вы выбрали: {date_for_show}")
 
         # Запрашиваем время события, выдаем клавиатуру, меняем state
-        await callback.message.answer(lx.WARNING_TEXTS["request_event_time"],
+        await callback.message.answer(WTEXT["request_meeting_time"],
                                       reply_markup=kb.time_keyboard())
         await state.set_state(FSMCreateMeeting.fill_meeting_time)
     except Exception as e:
@@ -108,7 +108,7 @@ async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
         await db.update_statistics(edited_events=True)
 
         # Оповещаем о внесении изменений, обнуляем state
-        await callback.message.answer(lx.WARNING_TEXTS["event_date_edited"])
+        await callback.message.answer(WTEXT["event_date_edited"])
         await state.clear()
     except Exception as e:
         logger.debug(f"Произошла ошибка в edit_date {e}")
@@ -121,11 +121,11 @@ set_meeting_date = Calendar(id='set_calendar', on_click=select_meeting_date)
 edit_calendar_date = Calendar(id='edit_calendar', on_click=edit_date)
 
 # Создаем окно календаря
-set_calendar_window_for_event = Window(Const(lx.WARNING_TEXTS["request_event_date"]),
+set_calendar_window_for_event = Window(Const(WTEXT["request_event_date"]),
                                        set_event_date, state=FSMCreateEvent.fill_event_date)
 
-set_calendar_window_for_meeting = Window(Const(lx.WARNING_TEXTS["request_meeting_date"]),
+set_calendar_window_for_meeting = Window(Const(WTEXT["request_meeting_date"]),
                                          set_meeting_date, state=FSMCreateMeeting.fill_meeting_date)
 
-edit_event_date_calendar_window = Window(Const(lx.WARNING_TEXTS["request_event_date"]),
+edit_event_date_calendar_window = Window(Const(WTEXT["request_event_date"]),
                                          edit_calendar_date, state=FSMEditEvent.edit_event_date)

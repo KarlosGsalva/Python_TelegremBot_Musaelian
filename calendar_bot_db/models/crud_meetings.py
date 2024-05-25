@@ -1,6 +1,6 @@
 import logging
 
-from datetime import time
+from datetime import time, timedelta
 from datetime import datetime as dt
 
 from sqlalchemy import select, update, and_, delete, or_, not_, insert
@@ -38,15 +38,16 @@ async def is_user_available(connection, user_tg_id, date, start_time, duration):
         return result.rowcount == 0
     except Exception as e:
         logger.debug(f"Ошибка в is_user_available {e}")
+        return None
 
 
 async def get_user_busy_slots(user_tg_id):
     try:
         async with async_engine.begin() as connection:
             query = (select([meetings.c.date, meetings.c.time, meetings.c.duration])
-                     .where(and_(
-                        meetings.c.user_tg_id == user_tg_id,
-                        meetings.c.status == "CF")))
+            .where(and_(
+                meetings.c.user_tg_id == user_tg_id,
+                meetings.c.status == "CF")))
 
             result = connection.execute(query)
             # ---------------
@@ -56,9 +57,11 @@ async def get_user_busy_slots(user_tg_id):
         return busy_slots
     except Exception as e:
         logger.debug(f"Ошибка в get_user_busy_slots {e}")
+        return None
 
 
-async def book_meeting(organizer, participant_ids, date, start_time, duration, event_id=None):
+async def book_meeting(organizer, participant_ids, date,
+                       start_time, duration, details, event_id=None):
     try:
         checked_participants = []
         async with async_engine.begin() as connection:
@@ -68,10 +71,11 @@ async def book_meeting(organizer, participant_ids, date, start_time, duration, e
 
             create_meeting = insert(meetings).values(
                 organizer=organizer,
-                event_id=event_id,
                 date=date,
                 time=start_time,
-                duration=duration
+                duration=duration,
+                details=details,
+                event_id=event_id
             )
             result = connection.execute(create_meeting)
             meeting_id = result.inserted_primary_key[0]
@@ -81,7 +85,64 @@ async def book_meeting(organizer, participant_ids, date, start_time, duration, e
                 for participant_id in participant_ids
             ]
 
-            connection.execute(meeting_participants.insert(), participants_data)
+            connection.execute(insert(meeting_participants), participants_data)
     except Exception as e:
         logger.debug(f"Ошибка в book_meeting {e}")
+        return None
 
+
+async def gather_all_users_db(user_tg_id: int) -> Optional[dict]:
+    try:
+        async with async_engine.begin() as connection:
+            query = select(
+                users.c.user_tg_id,
+                users.c.username
+            ).where(users.c.user_tg_id != user_tg_id)
+
+            result = await connection.execute(query)
+            user_data = {row.user_tg_id: {"user_id": row.user_tg_id, "username": row.username}
+                         for row in result}
+            return user_data
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в gather_all_users_db {e}")
+        return None
+
+
+async def write_meeting_in_db(organizer: int,
+                              meeting_name: str,
+                              meeting_date: str,
+                              meeting_time: time,
+                              meeting_duration: str,
+                              meeting_details: str,
+                              participants: list) -> None:
+    try:
+        event_date = dt.strptime(meeting_date, "%d.%m.%Y").date()
+        duration_interval = timedelta(minutes=int(meeting_duration))
+
+        async with async_engine.begin() as connection:
+            # Запись митинга в таблицу meetings
+            result = await connection.execute(
+                insert(meetings).values(
+                    user_tg_id=organizer,
+                    meeting_name=meeting_name,
+                    date=event_date,
+                    time=meeting_time,
+                    duration=duration_interval,
+                    details=meeting_details,
+                    status='PD'
+                ).returning(meetings.c.id)
+            )
+            meeting_id = result.scalar()
+
+            # Запись участников митинга
+            for participant_id in participants:
+                await connection.execute(
+                    insert(meeting_participants).values(
+                        meeting_id=meeting_id,
+                        user_tg_id=participant_id
+                    )
+                )
+
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в write_meeting_in_db {e}")
+        return None

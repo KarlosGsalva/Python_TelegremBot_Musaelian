@@ -12,6 +12,8 @@ class FSMCreateMeeting(StatesGroup):
     fill_meeting_name = State()
     fill_meeting_date = State()
     fill_meeting_time = State()
+    fill_meeting_duration = State()
+    fill_meeting_participants = State()
     fill_meeting_details = State()
 
 

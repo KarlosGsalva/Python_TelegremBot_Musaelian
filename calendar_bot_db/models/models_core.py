@@ -43,6 +43,7 @@ meetings = Table(
     Column("id", Integer, primary_key=True),
     Column("user_tg_id", Integer, ForeignKey("users.user_tg_id"), nullable=False),
     Column("event_id", Integer, ForeignKey("events.id"), nullable=True),
+    Column("meeting_name", String, nullable=False),
     Column("date", Date, nullable=False),
     Column("time", Time, nullable=False),
     Column("duration", Interval, default="00:15:00", nullable=False),
