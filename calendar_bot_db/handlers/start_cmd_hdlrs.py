@@ -15,7 +15,8 @@ router = Router(name="start_cmd_router")
 
 # Обрабатываем команду старт, выдаем меню
 @router.message(CommandStart(), StateFilter(default_state))
-async def process_start_command(message: Message):
+async def process_start_command(message: Message, state: FSMContext):
+    await state.clear()
     await message.answer(WTEXT["hello"])
     await message.answer(WTEXT["show_menu"])
 

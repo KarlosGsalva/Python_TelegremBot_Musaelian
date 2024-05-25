@@ -92,7 +92,7 @@ async def edit_date(callback: CallbackQuery, widget: ManagedCalendar,
         key = _make_key(callback)
         state = FSMContext(storage=storage, key=key)
 
-        await state.update_data(event_date=timestamp)
+        await state.update_data(event_date=date_for_show)
         user_data = await state.get_data()
         await manager.done()
 

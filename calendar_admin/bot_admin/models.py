@@ -63,7 +63,7 @@ class Meeting(models.Model):
                                   related_name="organized_meetings")
     participants = models.ManyToManyField(User, related_name="meetings")
     event = models.ForeignKey(Event, on_delete=models.CASCADE, null=True, blank=True)
-    meeting_name = models.CharField()
+    meeting_name = models.CharField(null=True)
     date = models.DateField()
     time = models.TimeField()
     duration = models.DurationField(default="00:15:00"),

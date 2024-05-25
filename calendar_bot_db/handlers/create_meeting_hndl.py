@@ -29,10 +29,10 @@ async def create_meeting(message: Message, state: FSMContext):
 
 
 @router.message(StateFilter(FSMCreateMeeting.fill_meeting_name))
-async def get_meeting_name(message: Message, state: FSMContext, dialog: DialogManager):
+async def get_meeting_name(message: Message, state: FSMContext, dialog_manager: DialogManager):
     await state.update_data(user_tg_id=message.from_user.id)
     await state.update_data(meeting_name=message.text)
-    await dialog.start(FSMCreateMeeting.fill_meeting_date)
+    await dialog_manager.start(FSMCreateMeeting.fill_meeting_date)
 
 
 @router.callback_query(F.data.startswith("time"), StateFilter(FSMCreateMeeting.fill_meeting_time))
