@@ -38,15 +38,19 @@ botstatistics = Table(
 
 meeting_status_enum = ENUM('CF', 'CL', 'PD', name='meetingstatus', metadata=metadata_obj)
 
-
-meeting = Table(
-    "meeting", metadata_obj,
+meetings = Table(
+    "meetings", metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("user_tg_id", None, ForeignKey("users.user_tg_id"), nullable=False),
-    Column("event_name", None, ForeignKey("events.event_name"), nullable=False),
+    Column("user_tg_id", Integer, ForeignKey("users.user_tg_id"), nullable=False),
+    Column("event_id", Integer, ForeignKey("events.id"), nullable=True),
     Column("date", Date, nullable=False),
     Column("time", Time, nullable=False),
-    Column("duration", Interval, nullable=False),
-    Column("participants", String),
+    Column("duration", Interval, default="00:15:00", nullable=False),
     Column("status", meeting_status_enum, default="PD", nullable=False)
+)
+
+meeting_participants = Table(
+    "meeting_participants", metadata_obj,
+    Column("meeting_id", Integer, ForeignKey("meetings.id")),
+    Column("participant_id", Integer, ForeignKey("users.user_tg_id"))
 )

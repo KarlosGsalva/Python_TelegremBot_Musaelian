@@ -62,7 +62,7 @@ class Meeting(models.Model):
                                   null=True, blank=True,
                                   related_name="organized_meetings")
     participants = models.ManyToManyField(User, related_name="meetings")
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateField()
     time = models.TimeField()
     duration = models.DurationField(default="00:15:00")
@@ -77,3 +77,12 @@ class Meeting(models.Model):
 
     def __str__(self):
         return f"{self.event.event_name} on {self.date} at {self.time}"
+
+
+class MeetingParticipant(models.Model):
+    meeting = models.ForeignKey('Meeting', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "meeting_participants"
+        unique_together = ('meeting', 'user')
