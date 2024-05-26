@@ -63,11 +63,11 @@ async def set_meeting_duration(message: Message, state: FSMContext):
 @router.callback_query(StateFilter(FSMCreateMeeting.fill_meeting_participants))
 async def get_participants(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
+    logger.debug(f"data = {data}")
     user_id = callback.data.replace("user_", "")
-    user_id_str = str(user_id)  # Преобразование user_id в строку
 
     logger.debug(f"data['participants'] на входе = {data['participants']}")
-    if user_id_str in data["participants"]:
+    if user_id in data["participants"]:
         data["participants"].remove(user_id)
         logger.debug(f"data['participants'] на выходе = {data['participants']}")
     else:
