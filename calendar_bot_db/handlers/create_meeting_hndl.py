@@ -9,7 +9,7 @@ from aiogram_dialog import DialogManager
 
 from calendar_bot_db.models import crud_sqla_core as db
 from calendar_bot_db.models import crud_meetings as dbm
-from calendar_bot_db.services import convert_str_to_time
+from calendar_bot_db.services import convert_str_to_time, inline_keyboards_are_different
 from calendar_bot_db.states import FSMCreateMeeting
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 
@@ -41,15 +41,16 @@ async def set_meeting_time(callback: CallbackQuery, state: FSMContext):
     meeting_time = callback.data[5:]
     await callback.message.answer(f"Вы выбрали {meeting_time} временем встречи.")
     await state.update_data(meeting_time=meeting_time)
-    await callback.message.answer(WTEXT["request_meeting_duration"])
+    await callback.message.answer(WTEXT["request_meeting_duration"], reply_markup=kb.cancel_markup)
     await state.set_state(FSMCreateMeeting.fill_meeting_duration)
 
 
-@router.callback_query(StateFilter(FSMCreateMeeting.fill_meeting_duration))
+@router.message(StateFilter(FSMCreateMeeting.fill_meeting_duration))
 async def set_meeting_duration(message: Message, state: FSMContext):
     duration = message.text
 
     if duration.isdigit():
+        await message.answer(f"Планируемое время встречи {duration} минут.")
         await state.update_data(duration=duration, participants=[])
         keyboard = await kb.make_users_as_buttons(message.from_user.id)
         await message.answer(WTEXT["request_meeting_participants"], reply_markup=keyboard)
@@ -62,16 +63,31 @@ async def set_meeting_duration(message: Message, state: FSMContext):
 @router.callback_query(StateFilter(FSMCreateMeeting.fill_meeting_participants))
 async def get_participants(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    user_id = callback.data
+    user_id = callback.data.replace("user_", "")
+    user_id_str = str(user_id)  # Преобразование user_id в строку
 
-    if user_id in data["participants"]:
+    logger.debug(f"data['participants'] на входе = {data['participants']}")
+    if user_id_str in data["participants"]:
         data["participants"].remove(user_id)
+        logger.debug(f"data['participants'] на выходе = {data['participants']}")
     else:
         data["participants"].append(user_id)
+        logger.debug(f"data['participants'] добавлен пользователь = {data['participants']}")
 
     await state.update_data(participants=data["participants"])
     keyboard = await kb.make_users_as_buttons(callback.from_user.id, data["participants"])
-    await callback.message.edit_reply_markup(reply_markup=keyboard)
+    # await callback.message.edit_reply_markup(reply_markup=keyboard)
+
+    # Проверяем, изменилось ли содержимое
+    current_keyboard = callback.message.reply_markup
+
+    if keyboard and current_keyboard:
+        if inline_keyboards_are_different(keyboard, current_keyboard):
+            await callback.message.edit_reply_markup(reply_markup=keyboard)
+        else:
+            logger.debug("Содержимое и разметка не изменились, обновление не требуется.")
+    else:
+        await callback.message.edit_reply_markup(reply_markup=keyboard)
 
 
 @router.callback_query(F.data == "participants_selected")

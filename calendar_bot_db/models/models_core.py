@@ -1,5 +1,5 @@
 from sqlalchemy import (Column, Integer, String, Table, Interval,
-                        MetaData, Date, Time, ForeignKey, CheckConstraint)
+                        MetaData, Date, Time, ForeignKey, CheckConstraint, BigInteger)
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ENUM
 
@@ -8,8 +8,8 @@ metadata_obj = MetaData()
 
 users = Table(
     "users", metadata_obj,
-    Column("id", Integer(), primary_key=True),
-    Column("user_tg_id", Integer(), unique=True),
+    Column("id", Integer, primary_key=True),
+    Column("user_tg_id", BigInteger, unique=True),
     Column("username", String(40)),
     Column("email", String(40)),
     Column("password_hash", String(150)),
@@ -18,7 +18,7 @@ users = Table(
 events = Table(
     "events", metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("user_tg_id", Integer, ForeignKey("users.user_tg_id")),
+    Column("user_tg_id", BigInteger, ForeignKey("users.user_tg_id")),
     Column("event_name", String, nullable=False, unique=True),
     Column("event_date", Date, default=func.current_date()),
     Column("event_time", Time, default=func.current_time()),
@@ -41,7 +41,7 @@ meeting_status_enum = ENUM('CF', 'CL', 'PD', name='meetingstatus', metadata=meta
 meetings = Table(
     "meetings", metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("user_tg_id", Integer, ForeignKey("users.user_tg_id"), nullable=False),
+    Column("user_tg_id", BigInteger, ForeignKey("users.user_tg_id"), nullable=False),
     Column("event_id", Integer, ForeignKey("events.id"), nullable=True),
     Column("meeting_name", String, nullable=False),
     Column("date", Date, nullable=False),
@@ -54,5 +54,5 @@ meetings = Table(
 meeting_participants = Table(
     "meeting_participants", metadata_obj,
     Column("meeting_id", Integer, ForeignKey("meetings.id")),
-    Column("participant_id", Integer, ForeignKey("users.user_tg_id"))
+    Column("participant_id", BigInteger, ForeignKey("users.user_tg_id"))
 )

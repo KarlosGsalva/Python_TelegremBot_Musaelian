@@ -100,8 +100,14 @@ async def gather_all_users_db(user_tg_id: int) -> Optional[dict]:
             ).where(users.c.user_tg_id != user_tg_id)
 
             result = await connection.execute(query)
-            user_data = {row.user_tg_id: {"user_id": row.user_tg_id, "username": row.username}
-                         for row in result}
+            logger.debug(f"result = {result}, result_type = {type(result)}")
+
+            user_data = {}
+            for row in result:
+                user_data[row.user_tg_id] = {
+                    "user_id": str(row.user_tg_id),
+                    "username": str(row.username) if row.username else str(row.user_tg_id)}
+
             return user_data
     except Exception as e:
         logger.debug(f"Произошла ошибка в gather_all_users_db {e}")

@@ -1,7 +1,7 @@
 import logging
 
 from aiogram import Bot
-from aiogram.types import BotCommandScopeAllPrivateChats, BotCommand
+from aiogram.types import BotCommandScopeAllPrivateChats, BotCommand, InlineKeyboardMarkup
 
 from bcrypt import hashpw, gensalt
 from datetime import time
@@ -32,6 +32,19 @@ def hash_password(password: str) -> str:
     salt = gensalt()
     return hashpw(password, salt).decode("utf-8")
 
+
+def inline_keyboards_are_different(kb1: InlineKeyboardMarkup, kb2: InlineKeyboardMarkup) -> bool:
+    if len(kb1.inline_keyboard) != len(kb2.inline_keyboard):
+        return True
+    for row1, row2 in zip(kb1.inline_keyboard, kb2.inline_keyboard):
+        if len(row1) != len(row2):
+            return True
+        for button1, button2 in zip(row1, row2):
+            if button1.text != button2.text or button1.callback_data != button2.callback_data:
+                logger.debug(f"Button1: {button1.text}, {button1.callback_data}")
+                logger.debug(f"Button2: {button2.text}, {button2.callback_data}")
+                return True
+    return False
 
 async def set_main_menu_cmds(bot: Bot):
     commands = [

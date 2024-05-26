@@ -38,9 +38,7 @@ async def select_event_date(callback: CallbackQuery, widget: ManagedCalendar,
 
         # Инициализируем контекст для сохранения даты и внесения изменений
         key = _make_key(callback)
-        logger.debug(f"key = {key}")
         state = FSMContext(storage=storage, key=key)
-        logger.debug(f"state = {state}")
         await state.update_data(event_date=date_for_show)
         await manager.done()
 
@@ -64,9 +62,7 @@ async def select_meeting_date(callback: CallbackQuery, widget: ManagedCalendar,
 
         # Инициализируем контекст для сохранения даты и внесения изменений
         key = _make_key(callback)
-        logger.debug(f"key = {key}")
         state = FSMContext(storage=storage, key=key)
-        logger.debug(f"state = {state}")
         await state.update_data(meeting_date=date_for_show)
         await manager.done()
 

@@ -79,16 +79,28 @@ async def make_users_as_buttons(user_tg_id, selected_participants: list = None
                                 ) -> Optional[InlineKeyboardMarkup]:
     try:
         all_participants = await gather_all_users_db(user_tg_id=user_tg_id)
+        logger.debug(f"All participants: {all_participants}")
         buttons = []
 
+        if all_participants is None:
+            return None
+
         if selected_participants is not None:
+            selected_participants = [str(p) for p in selected_participants]
+            logger.debug(f"selected_participants = {selected_participants}")
             for user_id, user in all_participants.items():
-                text = f"{user['username ✔️']}" if user_id in selected_participants else f"{user['username']}"
-                buttons.append(InlineKeyboardButton(text=text, callback_data=user_id))
+                user_id_str = str(user_id)  # Преобразование user_id в строку
+                is_selected = user_id_str in selected_participants
+                text = f"{user['username']} ✔️" if user_id in selected_participants else f"{user['username']}"
+                callback_data = f"user_{user['user_id']}"
+                logger.debug(f"User ID: {user_id}, Text: {text}, Callback Data: {callback_data}, Is selected: {is_selected}")
+                buttons.append(InlineKeyboardButton(text=text, callback_data=callback_data))
         else:
             for user_id, user in all_participants.items():
+                callback_data = f"user_{user['user_id']}"
+                logger.debug(f"User ID: {user_id}, Text: {user['username']}, Callback Data: {callback_data}")
                 buttons.append(InlineKeyboardButton(text=f"{user['username']}",
-                                                    callback_data=user['user_id']))
+                                                    callback_data=callback_data))
 
         buttons.append(participants_selected_btn)
         buttons.append(cancel_button)
