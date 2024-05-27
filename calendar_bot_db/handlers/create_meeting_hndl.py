@@ -15,7 +15,6 @@ from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 
 import calendar_bot_db.keyboards as kb
 
-
 logger = logging.getLogger(__name__)
 
 router = Router(name="create_meeting_router")
@@ -98,6 +97,12 @@ async def write_event_details(message: Message, state: FSMContext):
     meeting_participants = meeting_data["participants"]
     meeting_details = meeting_data["meeting_details"]
 
+    # Записываем в БД и получаем meeting_id
+    meeting_id = await dbm.write_meeting_in_db(
+        user_tg_id, meeting_name, meeting_date, meeting_time,
+        meeting_duration, meeting_details, meeting_participants
+    )
+
     # Отправляем приглашения
     text_for_send = (f"Вы приглашены на событие: {meeting_name}\n"
                      f"День проведения: {meeting_date}\n"
@@ -106,15 +111,11 @@ async def write_event_details(message: Message, state: FSMContext):
                      f"Пожалуйста подтвердите или отклоните приглашение.")
 
     for participant in meeting_participants:
-        keyboard = await kb.accept_decline_meeting_buttons(participant)
+        keyboard = await kb.accept_decline_meeting_buttons(participant, meeting_id)
         await message.bot.send_message(chat_id=participant,
                                        text=text_for_send,
                                        reply_markup=keyboard)
 
-    # Записываем в БД
-    await dbm.write_meeting_in_db(user_tg_id, meeting_name, meeting_date, meeting_time,
-                                  meeting_duration, meeting_details, meeting_participants)
     await db.update_statistics(event_count=True)
     await message.answer(WTEXT["meeting_made"])
     await state.clear()
-

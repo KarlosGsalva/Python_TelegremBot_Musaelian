@@ -150,7 +150,7 @@ async def write_meeting_in_db(organizer: int,
                         status='PD'
                     )
                 )
-
+            return meeting_id
     except Exception as e:
         logger.debug(f"Произошла ошибка в write_meeting_in_db {e}")
         return None
@@ -163,14 +163,14 @@ async def accept_decline_invite(participant_id: int, meeting_id: int,
             if accept:
                 confirmed = "CF"
                 query = (update(meeting_participants)
-                         .where(meeting_participants.c.id == meeting_id,
+                         .where(meeting_participants.c.meeting_id == meeting_id,
                                 meeting_participants.c.user_tg_id == participant_id)
                          .values(status=confirmed))
 
             elif decline:
                 canceled = "CL"
                 query = (update(meeting_participants)
-                         .where(meeting_participants.c.id == meeting_id,
+                         .where(meeting_participants.c.meeting_id == meeting_id,
                                 meeting_participants.c.user_tg_id == participant_id)
                          .values(status=canceled))
 

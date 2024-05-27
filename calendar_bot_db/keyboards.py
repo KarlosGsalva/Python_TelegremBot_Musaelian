@@ -110,12 +110,16 @@ async def make_users_as_buttons(user_tg_id, selected_participants: list = None
         return None
 
 
-async def accept_decline_meeting_buttons(participant_id):
+async def accept_decline_meeting_buttons(participant_id, meeting_id):
     try:
-        accept_btn = InlineKeyboardButton(text="Принять",
-                                          callback_data=f"accepted_by_{participant_id}")
-        decline_btn = InlineKeyboardButton(text="Отклонить",
-                                           callback_data=f"declined_by_{participant_id}")
+        accept_btn = InlineKeyboardButton(
+            text="Принять",
+            callback_data=f"accepted_by_{participant_id}_meeting_{meeting_id}"
+        )
+        decline_btn = InlineKeyboardButton(
+            text="Отклонить",
+            callback_data=f"declined_by_{participant_id}_meeting_{meeting_id}"
+        )
         return _make_inline_keyboard([accept_btn, decline_btn, cancel_button])
     except Exception as e:
         logger.debug(f"Произошла ошибка в accept_decline_meeting_buttons {e}")
