@@ -86,22 +86,22 @@ async def make_users_as_buttons(user_tg_id, selected_participants: list = None
             return None
 
         if selected_participants is not None:
-            selected_participants = [str(p) for p in selected_participants]
-            logger.debug(f"selected_participants = {selected_participants}")
-            for user_id, user in all_participants.items():
-                user_id_str = str(user_id)  # Преобразование user_id в строку
-                logger.debug(f"user_id_str = {user_id_str}")
-                is_selected = user_id_str in selected_participants
+
+            for user in all_participants.values():
+                logger.debug(f"user_id = {user['user_id']}, user = {user['user_id']}")
+
+                is_selected = user["user_id"] in selected_participants
                 text = f"{user['username']} ✔️" if is_selected else f"{user['username']}"
-                callback_data = f"user_{user['user_id']}"
-                logger.debug(f"User ID: {user_id}, "
+                callback_data = user["user_id"]
+
+                logger.debug(f"User ID: {user['user_id']}, "
                              f"Text: {text}, "
                              f"Callback Data: {callback_data}, "
                              f"Is selected: {is_selected}")
                 buttons.append(InlineKeyboardButton(text=text, callback_data=callback_data))
         else:
             for user_id, user in all_participants.items():
-                callback_data = f"user_{user['user_id']}"
+                callback_data = user['user_id']
                 logger.debug(f"User ID: {user_id}, Text: {user['username']}, Callback Data: {callback_data}")
                 buttons.append(InlineKeyboardButton(text=f"{user['username']}",
                                                     callback_data=callback_data))

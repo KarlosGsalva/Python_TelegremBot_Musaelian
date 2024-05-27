@@ -106,7 +106,7 @@ async def gather_all_users_db(user_tg_id: int) -> Optional[dict]:
             for row in result:
                 user_data[row.user_tg_id] = {
                     "user_id": str(row.user_tg_id),
-                    "username": str(row.username) if row.username else str(row.user_tg_id)}
+                    "username": row.username if row.username else str(row.user_tg_id)}
 
             return user_data
     except Exception as e:
@@ -140,8 +140,11 @@ async def write_meeting_in_db(organizer: int,
             )
             meeting_id = result.scalar()
 
+            logger.debug(f"Meeting ID: {meeting_id}")
+
             # Запись участников митинга
             for participant_id in participants:
+                logger.debug(f"participant_id: {participant_id}")
                 await connection.execute(
                     insert(meeting_participants).values(
                         meeting_id=meeting_id,

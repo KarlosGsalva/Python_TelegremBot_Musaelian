@@ -57,6 +57,11 @@ class Meeting(models.Model):
         CANCELED = "CL", "Canceled"
         PENDING = "PD", "Pending"
 
+    user_tg_id = models.ForeignKey(User,
+                                   to_field="user_tg_id",
+                                   db_column="user_tg_id",
+                                   on_delete=models.CASCADE,
+                                   default=1)
     organizer = models.ForeignKey(User,
                                   on_delete=models.CASCADE,
                                   null=True, blank=True,

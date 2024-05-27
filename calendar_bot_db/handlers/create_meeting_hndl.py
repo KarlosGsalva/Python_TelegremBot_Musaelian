@@ -60,7 +60,8 @@ async def set_meeting_duration(message: Message, state: FSMContext):
         await message.answer(WTEXT["request_meeting_details"], reply_markup=kb.cancel_markup)
 
 
-@router.callback_query(StateFilter(FSMCreateMeeting.fill_meeting_participants))
+@router.callback_query(F.data != "participants_selected",
+                       StateFilter(FSMCreateMeeting.fill_meeting_participants))
 async def get_participants(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     logger.debug(f"data = {data}")

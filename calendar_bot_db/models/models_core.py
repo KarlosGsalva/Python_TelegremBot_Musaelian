@@ -53,6 +53,6 @@ meetings = Table(
 
 meeting_participants = Table(
     "meeting_participants", metadata_obj,
-    Column("meeting_id", Integer, ForeignKey("meetings.id")),
-    Column("participant_id", BigInteger, ForeignKey("users.user_tg_id"))
+    Column("meeting_id", Integer, ForeignKey("meetings.id"), primary_key=True),
+    Column("user_tg_id", BigInteger, ForeignKey("users.user_tg_id"), primary_key=True)
 )
