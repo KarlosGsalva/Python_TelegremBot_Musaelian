@@ -22,7 +22,7 @@ router = Router(name="create_meeting_router")
 
 
 # Хэндлер для создания встречи
-@router.message(Command(commands=["7"]), StateFilter(default_state))
+@router.callback_query(Command(commands=["7"]), StateFilter(default_state))
 async def create_meeting(message: Message, state: FSMContext):
     await message.answer(WTEXT["request_meeting_name"], reply_markup=kb.cancel_markup)
     await state.set_state(FSMCreateMeeting.fill_meeting_name)

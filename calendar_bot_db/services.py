@@ -46,6 +46,7 @@ def inline_keyboards_are_different(kb1: InlineKeyboardMarkup, kb2: InlineKeyboar
                 return True
     return False
 
+
 async def set_main_menu_cmds(bot: Bot):
     commands = [
         BotCommand(command="start", description="Начать работу"),

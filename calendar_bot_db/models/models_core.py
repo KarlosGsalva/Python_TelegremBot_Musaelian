@@ -1,5 +1,5 @@
 from sqlalchemy import (Column, Integer, String, Table, Interval,
-                        MetaData, Date, Time, ForeignKey, CheckConstraint, BigInteger)
+                        MetaData, Date, Time, ForeignKey, CheckConstraint, BigInteger, UniqueConstraint)
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ENUM
 
@@ -35,8 +35,7 @@ botstatistics = Table(
     Column("canceled_events", Integer, CheckConstraint("canceled_events >= 0")),
 )
 
-
-meeting_status_enum = ENUM('CF', 'CL', 'PD', name='meetingstatus', metadata=metadata_obj)
+participant_status_enum = ENUM('CF', 'CL', 'PD', name='meetingstatus', metadata=metadata_obj)
 
 meetings = Table(
     "meetings", metadata_obj,
@@ -47,12 +46,13 @@ meetings = Table(
     Column("date", Date, nullable=False),
     Column("time", Time, nullable=False),
     Column("duration", Interval, default="00:15:00", nullable=False),
-    Column("details", String, nullable=True),
-    Column("status", meeting_status_enum, default="PD", nullable=False)
+    Column("details", String, nullable=True)
 )
 
 meeting_participants = Table(
     "meeting_participants", metadata_obj,
     Column("meeting_id", Integer, ForeignKey("meetings.id"), primary_key=True),
-    Column("user_tg_id", BigInteger, ForeignKey("users.user_tg_id"), primary_key=True)
+    Column("user_tg_id", BigInteger, ForeignKey("users.user_tg_id"), primary_key=True),
+    Column("status", participant_status_enum, default="PD", nullable=False),
+    UniqueConstraint('meeting_id', 'user_tg_id', name='uix_meeting_participants')
 )

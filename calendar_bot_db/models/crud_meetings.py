@@ -3,6 +3,8 @@ import logging
 from datetime import time, timedelta
 from datetime import datetime as dt
 
+from aiogram import Bot
+from aiogram.types import Message, InlineKeyboardMarkup
 from sqlalchemy import select, update, and_, delete, or_, not_, insert
 from sqlalchemy.sql import func
 
@@ -18,9 +20,9 @@ logger = logging.getLogger(__name__)
 async def is_user_available(connection, user_tg_id, date, start_time, duration):
     try:
         end_time = (dt.combine(date, start_time) + duration).time()
-        # ---------------
+
         logger.debug(f"result в is_user_available {end_time, type(end_time)}")
-        # ---------------
+
         query = select([meetings]).select_from(meetings.join(meeting_participants)).where(
             and_(
                 meeting_participants.c.participant_id == user_tg_id,
@@ -32,9 +34,9 @@ async def is_user_available(connection, user_tg_id, date, start_time, duration):
                 ))))
 
         result = connection.execute(query)
-        # ---------------
+
         logger.debug(f"result в is_user_available {result}")
-        # ---------------
+
         return result.rowcount == 0
     except Exception as e:
         logger.debug(f"Ошибка в is_user_available {e}")
@@ -50,9 +52,9 @@ async def get_user_busy_slots(user_tg_id):
                 meetings.c.status == "CF")))
 
             result = connection.execute(query)
-            # ---------------
+
             logger.debug(f"result в get_user_busy_slots {result, type(result)}")
-            # ---------------
+
         busy_slots = [(row.date, row.time, row.duration) for row in result]
         return busy_slots
     except Exception as e:
@@ -135,23 +137,48 @@ async def write_meeting_in_db(organizer: int,
                     time=meeting_time,
                     duration=duration_interval,
                     details=meeting_details,
-                    status='PD'
                 ).returning(meetings.c.id)
             )
             meeting_id = result.scalar()
 
-            logger.debug(f"Meeting ID: {meeting_id}")
-
             # Запись участников митинга
             for participant_id in participants:
-                logger.debug(f"participant_id: {participant_id}")
                 await connection.execute(
                     insert(meeting_participants).values(
                         meeting_id=meeting_id,
-                        user_tg_id=participant_id
+                        user_tg_id=participant_id,
+                        status='PD'
                     )
                 )
 
     except Exception as e:
         logger.debug(f"Произошла ошибка в write_meeting_in_db {e}")
+        return None
+
+
+async def accept_decline_invite(participant_id: int, meeting_id: int,
+                                accept=False, decline=False):
+    try:
+        async with async_engine.begin() as connection:
+            if accept:
+                confirmed = "CF"
+                query = (update(meeting_participants)
+                         .where(meeting_participants.c.id == meeting_id,
+                                meeting_participants.c.user_tg_id == participant_id)
+                         .values(status=confirmed))
+
+            elif decline:
+                canceled = "CL"
+                query = (update(meeting_participants)
+                         .where(meeting_participants.c.id == meeting_id,
+                                meeting_participants.c.user_tg_id == participant_id)
+                         .values(status=canceled))
+
+            else:
+                logger.debug("Не указаны accept или decline, статус не изменен.")
+                return None
+
+            await connection.execute(query)
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в accept_decline_invite {e}")
         return None

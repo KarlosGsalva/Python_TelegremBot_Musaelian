@@ -86,10 +86,7 @@ async def make_users_as_buttons(user_tg_id, selected_participants: list = None
             return None
 
         if selected_participants is not None:
-
             for user in all_participants.values():
-                logger.debug(f"user_id = {user['user_id']}, user = {user['user_id']}")
-
                 is_selected = user["user_id"] in selected_participants
                 text = f"{user['username']} ✔️" if is_selected else f"{user['username']}"
                 callback_data = user["user_id"]
@@ -102,7 +99,6 @@ async def make_users_as_buttons(user_tg_id, selected_participants: list = None
         else:
             for user_id, user in all_participants.items():
                 callback_data = user['user_id']
-                logger.debug(f"User ID: {user_id}, Text: {user['username']}, Callback Data: {callback_data}")
                 buttons.append(InlineKeyboardButton(text=f"{user['username']}",
                                                     callback_data=callback_data))
 
@@ -111,4 +107,16 @@ async def make_users_as_buttons(user_tg_id, selected_participants: list = None
         return _make_inline_keyboard(buttons, width=1)
     except Exception as e:
         logger.debug(f"Произошла ошибка в make_users_as_buttons {e}")
+        return None
+
+
+async def accept_decline_meeting_buttons(participant_id):
+    try:
+        accept_btn = InlineKeyboardButton(text="Принять",
+                                          callback_data=f"accepted_by_{participant_id}")
+        decline_btn = InlineKeyboardButton(text="Отклонить",
+                                           callback_data=f"declined_by_{participant_id}")
+        return _make_inline_keyboard([accept_btn, decline_btn, cancel_button])
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в accept_decline_meeting_buttons {e}")
         return None

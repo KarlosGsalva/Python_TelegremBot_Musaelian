@@ -52,20 +52,12 @@ class BotStatistics(models.Model):
 
 
 class Meeting(models.Model):
-    class MeetingStatus(models.TextChoices):
-        CONFIRMED = "CF", "Confirmed"
-        CANCELED = "CL", "Canceled"
-        PENDING = "PD", "Pending"
-
     user_tg_id = models.ForeignKey(User,
                                    to_field="user_tg_id",
                                    db_column="user_tg_id",
                                    on_delete=models.CASCADE,
+                                   related_name="organizer",
                                    default=1)
-    organizer = models.ForeignKey(User,
-                                  on_delete=models.CASCADE,
-                                  null=True, blank=True,
-                                  related_name="organized_meetings")
     participants = models.ManyToManyField(User, related_name="meetings")
     event = models.ForeignKey(Event, on_delete=models.CASCADE, null=True, blank=True)
     meeting_name = models.CharField(null=True)
@@ -73,9 +65,6 @@ class Meeting(models.Model):
     time = models.TimeField()
     duration = models.DurationField(default="00:15:00"),
     details = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=2,
-                              choices=MeetingStatus.choices,
-                              default=MeetingStatus.PENDING)
 
     class Meta:
         db_table = "meetings"
@@ -87,8 +76,16 @@ class Meeting(models.Model):
 
 
 class MeetingParticipant(models.Model):
+    class MeetingStatus(models.TextChoices):
+        CONFIRMED = "CF", "Confirmed"
+        CANCELED = "CL", "Canceled"
+        PENDING = "PD", "Pending"
+
     meeting = models.ForeignKey('Meeting', on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    status = models.CharField(max_length=2,
+                              choices=MeetingStatus.choices,
+                              default=MeetingStatus.PENDING)
 
     class Meta:
         db_table = "meeting_participants"
