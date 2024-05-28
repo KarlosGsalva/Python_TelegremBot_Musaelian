@@ -108,7 +108,7 @@ async def write_event_details(message: Message, state: FSMContext):
                      f"День проведения: {meeting_date}\n"
                      f"Время начала встречи: {meeting_time}\n"
                      f"Встреча займет: {meeting_duration} минут.\n"
-                     f"Пожалуйста подтвердите или отклоните приглашение.")
+                     f"Пожалуйста, подтвердите или отклоните приглашение.")
 
     for participant in meeting_participants:
         keyboard = await kb.accept_decline_meeting_buttons(participant, meeting_id)

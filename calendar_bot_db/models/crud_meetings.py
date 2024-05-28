@@ -63,13 +63,13 @@ async def get_user_busy_slots(user_tg_id):
             result = await connection.execute(query)
             rows = result.fetchall()
 
-            busy_slots = [(row.meeting_name,
+            busy_slots = ((row.meeting_name,
                            row.date,
                            row.time,
                            row.duration,
                            row.end_time,
                            row.details)
-                          for row in rows]
+                          for row in rows)
 
             # Форматирование вывода
             formatted_slots = "\n".join(
@@ -172,15 +172,23 @@ async def write_meeting_in_db(organizer: int,
             )
             meeting_id = result.scalar()
 
-            # Запись участников митинга
+            # Записываем организатора со статусом подтверждено
+            await connection.execute(
+                insert(meeting_participants).values(
+                    meeting_id=meeting_id,
+                    user_tg_id=organizer,
+                    status="CF"
+                ))
+
+            # Записываем приглашенных участников митинга
             for participant_id in participants:
                 await connection.execute(
                     insert(meeting_participants).values(
                         meeting_id=meeting_id,
                         user_tg_id=participant_id,
-                        status='PD'
-                    )
-                )
+                        status="PD"
+                    ))
+
             return meeting_id
     except Exception as e:
         logger.debug(f"Произошла ошибка в write_meeting_in_db {e}")
