@@ -46,17 +46,43 @@ async def is_user_available(connection, user_tg_id, date, start_time, duration):
 async def get_user_busy_slots(user_tg_id):
     try:
         async with async_engine.begin() as connection:
-            query = (select([meetings.c.date, meetings.c.time, meetings.c.duration])
-            .where(and_(
-                meetings.c.user_tg_id == user_tg_id,
-                meetings.c.status == "CF")))
+            query = select(
+                meetings.c.meeting_name,
+                meetings.c.date,
+                meetings.c.time,
+                meetings.c.duration,
+                meetings.c.end_time,
+                meetings.c.details
+            ).select_from(meetings.join(meeting_participants)).where(
+                and_(
+                    meeting_participants.c.user_tg_id == user_tg_id,
+                    meeting_participants.c.status == "CF"
+                )
+            )
 
-            result = connection.execute(query)
+            result = await connection.execute(query)
+            rows = result.fetchall()
 
-            logger.debug(f"result в get_user_busy_slots {result, type(result)}")
+            busy_slots = [(row.meeting_name,
+                           row.date,
+                           row.time,
+                           row.duration,
+                           row.end_time,
+                           row.details)
+                          for row in rows]
 
-        busy_slots = [(row.date, row.time, row.duration) for row in result]
-        return busy_slots
+            # Форматирование вывода
+            formatted_slots = "\n".join(
+                f"Meeting: {slot[0]}\n"
+                f"Date: {slot[1]}\n"
+                f"Time: {slot[2]}\n"
+                f"Duration: {slot[3]}\n"
+                f"End time: {slot[4]}\n"
+                f"Details: {slot[5]}\n"
+                for slot in busy_slots
+            )
+
+            return formatted_slots
     except Exception as e:
         logger.debug(f"Ошибка в get_user_busy_slots {e}")
         return None
@@ -124,8 +150,12 @@ async def write_meeting_in_db(organizer: int,
                               meeting_details: str,
                               participants: list) -> None:
     try:
-        event_date = dt.strptime(meeting_date, "%d.%m.%Y").date()
+        meeting_date = dt.strptime(meeting_date, "%d.%m.%Y").date()
         duration_interval = timedelta(minutes=int(meeting_duration))
+
+        start_datetime = dt.combine(meeting_date, meeting_time)
+        end_datetime = start_datetime + duration_interval
+        end_time = end_datetime.time()
 
         async with async_engine.begin() as connection:
             # Запись митинга в таблицу meetings
@@ -133,9 +163,10 @@ async def write_meeting_in_db(organizer: int,
                 insert(meetings).values(
                     user_tg_id=organizer,
                     meeting_name=meeting_name,
-                    date=event_date,
+                    date=meeting_date,
                     time=meeting_time,
                     duration=duration_interval,
+                    end_time=end_time,
                     details=meeting_details,
                 ).returning(meetings.c.id)
             )

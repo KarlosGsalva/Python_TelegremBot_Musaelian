@@ -46,6 +46,7 @@ meetings = Table(
     Column("date", Date, nullable=False),
     Column("time", Time, nullable=False),
     Column("duration", Interval, default="00:15:00", nullable=False),
+    Column("end_time", Time, nullable=False),
     Column("details", String, nullable=True)
 )
 

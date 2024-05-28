@@ -63,7 +63,8 @@ class Meeting(models.Model):
     meeting_name = models.CharField(null=True)
     date = models.DateField()
     time = models.TimeField()
-    duration = models.DurationField(default="00:15:00"),
+    duration = models.DurationField(default="00:15:00")
+    end_time = models.TimeField(null=True, blank=True)
     details = models.TextField(null=True, blank=True)
 
     class Meta:
