@@ -9,11 +9,14 @@ from aiogram_dialog import DialogManager
 
 from calendar_bot_db.models import crud_sqla_core as db
 from calendar_bot_db.models import crud_meetings as dbm
+from calendar_bot_db.models.config import async_engine
 from calendar_bot_db.services import convert_str_to_time
 from calendar_bot_db.states import FSMCreateMeeting
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 
 import calendar_bot_db.keyboards as kb
+
+from datetime import datetime as dt, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -66,14 +69,28 @@ async def get_participants(callback: CallbackQuery, state: FSMContext):
     participants = data["participants"]
     user_id = callback.data
 
-    if user_id in participants:
-        participants.remove(user_id)
-    else:
-        participants.append(user_id)
+    # Проверка занятости времени участников
+    async with async_engine.begin() as connection:
+        meeting_date_str = data.get("meeting_date")
+        meeting_date = dt.strptime(meeting_date_str, "%d.%m.%Y").date()
+        meeting_time = dt.strptime(data.get("meeting_time"), "%H:%M").time()
+        meeting_duration = timedelta(minutes=int(data.get("duration")))
 
-    await state.update_data(participants=participants)
-    keyboard = await kb.make_users_as_buttons(callback.from_user.id, participants)
-    await callback.message.edit_reply_markup(reply_markup=keyboard)
+        is_busy = await dbm.is_user_available(connection, user_id, meeting_date,
+                                              meeting_time, meeting_duration)
+
+    if is_busy:
+        await callback.answer("У выбранного пользователя уже назначена встреча на это время",
+                              show_alert=True)
+    else:
+        if user_id in participants:
+            participants.remove(user_id)
+        else:
+            participants.append(user_id)
+
+        await state.update_data(participants=participants)
+        keyboard = await kb.make_users_as_buttons(callback.from_user.id, participants)
+        await callback.message.edit_reply_markup(reply_markup=keyboard)
 
 
 @router.callback_query(F.data == "participants_selected")
