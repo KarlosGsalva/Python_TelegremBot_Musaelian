@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.db import models
 from django.utils import timezone
 import logging
@@ -58,7 +59,7 @@ class Meeting(models.Model):
                                    on_delete=models.CASCADE,
                                    related_name="organizer",
                                    default=1)
-    participants = models.ManyToManyField(User, related_name="meetings")
+    participants = models.ManyToManyField(User, related_name="meetings", through="MeetingParticipant")
     event = models.ForeignKey(Event, on_delete=models.CASCADE, null=True, blank=True)
     meeting_name = models.CharField(null=True)
     date = models.DateField()
@@ -73,7 +74,7 @@ class Meeting(models.Model):
         verbose_name_plural = "meetings"
 
     def __str__(self):
-        return f"{self.meeting.event_name} on {self.date} at {self.time}"
+        return f"{self.meeting_name} on {self.date} at {self.time}"
 
 
 class MeetingParticipant(models.Model):
@@ -94,3 +95,17 @@ class MeetingParticipant(models.Model):
     class Meta:
         db_table = "meeting_participants"
         unique_together = ('meeting', 'user')
+
+
+class MeetingParticipantInline(admin.TabularInline):
+    model = MeetingParticipant
+    extra = 1
+    can_delete = True
+    show_change_link = True
+    readonly_fields = ('user', 'status')
+    fields = ('user', 'status')
+
+
+class MeetingAdmin(admin.ModelAdmin):
+    list_display = ('meeting_name', 'date', 'time', 'duration', 'end_time', 'details')
+    inlines = [MeetingParticipantInline]
