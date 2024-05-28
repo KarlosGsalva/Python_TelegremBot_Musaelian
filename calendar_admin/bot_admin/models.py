@@ -83,7 +83,10 @@ class MeetingParticipant(models.Model):
         PENDING = "PD", "Pending"
 
     meeting = models.ForeignKey('Meeting', on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User,
+                             to_field='user_tg_id',
+                             db_column='user_tg_id',
+                             on_delete=models.CASCADE)
     status = models.CharField(max_length=2,
                               choices=MeetingStatus.choices,
                               default=MeetingStatus.PENDING)
