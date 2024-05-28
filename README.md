@@ -9,5 +9,5 @@ karlenmusaelian@gmail.com
 Команда для запуска: docker-compose -f docker-compose.yml up --build
 
 Требуется перенастроить: 
-1) .example_env 
-2) settings_template.py
+1) .example_env -> .env
+2) settings_template.py -> settings.py
