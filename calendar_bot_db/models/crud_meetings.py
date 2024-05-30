@@ -220,3 +220,75 @@ async def accept_decline_invite(participant_id: int, meeting_id: int,
     except Exception as e:
         logger.debug(f"Произошла ошибка в accept_decline_invite {e}")
         return None
+
+
+async def get_calendar_events(user_tg_id):
+    try:
+        async with async_engine.begin() as connection:
+            query_event = select(
+                events.c.event_name,
+                events.c.event_date,
+                events.c.event_time,
+                events.c.event_details
+            ).where(
+                events.c.user_tg_id == user_tg_id
+            )
+
+            query_meeting = select(
+                meetings.c.meeting_name,
+                meetings.c.date,
+                meetings.c.time,
+                meetings.c.duration,
+                meetings.c.end_time,
+                meetings.c.details
+            ).where(
+                meetings.c.user_tg_id == user_tg_id
+            )
+
+            result_events = await connection.execute(query_event)
+            events_data = result_events.fetchall()
+
+            result_meetings = await connection.execute(query_meeting)
+            meetings_data = result_meetings.fetchall()
+
+            combined_data = []
+            for row in events_data:
+                combined_data.append({
+                    "type": "Событие",
+                    "name": row.event_name,
+                    "date": row.event_date,
+                    "time": row.event_time,
+                    "details": row.event_details
+                })
+
+            for row in meetings_data:
+                combined_data.append({
+                    "type": "Встреча",
+                    "name": row.meeting_name,
+                    "date": row.date,
+                    "time": row.time,
+                    "duration": row.duration,
+                    "end_time": row.end_time,
+                    "details": row.details
+                })
+
+            combined_data.sort(key=lambda x: (x["date"], x["time"], x["name"]))
+
+            result_string = ""
+            for item in combined_data:
+                if item["type"] == "Событие":
+                    result_string += (f"Событие: {item['name']}\n"
+                                      f"Дата: {item['date']}\n"
+                                      f"Время: {item['time']}\n"
+                                      f"Описание: {item['details']}\n\n")
+                else:
+                    result_string += (f"Встреча: {item['name']}\n"
+                                      f"Дата: {item['date']}\n"
+                                      f"Время: {item['time']}\n"
+                                      f"Длительность: {item['duration']}\n"
+                                      f"Время окончания: {item['end_time']}\n"
+                                      f"Описание: {item['details']}\n")
+            return result_string
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в get_calendar_events {e}")
+        return None

@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message
 
-from calendar_bot_db.models import crud_sqla_core as db
+from calendar_bot_db.models import crud_events_core as db
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 
 import calendar_bot_db.keyboards as kb

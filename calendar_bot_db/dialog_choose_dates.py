@@ -9,7 +9,7 @@ from aiogram_dialog.widgets.text import Const
 from aiogram_dialog import DialogManager, Window
 
 from calendar_bot_db.states import FSMEditEvent, FSMCreateEvent, FSMCreateMeeting
-from calendar_bot_db.models import crud_sqla_core as db
+from calendar_bot_db.models import crud_events_core as db
 from calendar_bot_db.models.config import storage
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 import calendar_bot_db.keyboards as kb

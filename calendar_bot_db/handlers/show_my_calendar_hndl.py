@@ -1,15 +1,15 @@
 import logging
 
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import StateFilter, Command
 from aiogram.fsm.state import default_state
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 from calendar_bot_db.models.config import settings
 
 import calendar_bot_db.keyboards as kb
-
+from calendar_bot_db.models.crud_meetings import get_calendar_events
 
 logger = logging.getLogger(__name__)
 
@@ -24,3 +24,11 @@ async def show_all_events(message: Message):
     keyboard = await kb.make_url_link_button(calendar_url)
     await message.answer(WTEXT["calendar"],
                          reply_markup=keyboard)
+
+
+@router.callback_query(F.data == "show_calendar")
+async def show_full_calendar(callback: CallbackQuery):
+    await callback.answer()
+    user_tg_id = callback.from_user.id
+    text = await get_calendar_events(user_tg_id)
+    await callback.message.answer(text=text)

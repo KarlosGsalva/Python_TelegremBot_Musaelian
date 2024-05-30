@@ -4,7 +4,7 @@ from aiogram.utils.keyboard import (InlineKeyboardButton,
                                     InlineKeyboardMarkup,
                                     InlineKeyboardBuilder)
 
-from calendar_bot_db.models import crud_sqla_core as db
+from calendar_bot_db.models import crud_events_core as db
 from calendar_bot_db.models import crud_meetings as dbm
 from typing import Optional
 
@@ -128,8 +128,9 @@ async def accept_decline_meeting_buttons(participant_id, meeting_id):
 
 async def make_url_link_button(calendar_url):
     try:
-        login_button = InlineKeyboardButton(text="Мой календарь", url=calendar_url)
-        return _make_inline_keyboard([login_button])
+        login_btn = InlineKeyboardButton(text="Мой календарь", url=calendar_url)
+        calendar_btn = InlineKeyboardButton(text="Вывести расписание в чат", callback_data="show_calendar")
+        return _make_inline_keyboard([login_btn, calendar_btn])
     except Exception as e:
         logger.debug(f"Произошла ошибка в make_url_login_button {e}")
         return None

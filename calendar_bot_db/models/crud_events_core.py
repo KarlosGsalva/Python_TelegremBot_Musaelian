@@ -141,7 +141,7 @@ async def save_registry_user_data(user_tg_id: int,
 async def update_statistics(event_count: bool = False,
                             edited_events: bool = False,
                             canceled_events: bool = False) -> None:
-    current_date = dt.today()
+    current_date = dt.today().date()
     try:
         stat_to_update = {
             "event_count": event_count,
