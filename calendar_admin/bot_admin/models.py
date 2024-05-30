@@ -16,13 +16,12 @@ class User(models.Model):
         db_table = "users"
 
     def __str__(self):
-        return str(self.user_tg_id)
+        return self.username if self.username else str(self.user_tg_id)
 
 
 class Event(models.Model):
     user_tg_id = models.ForeignKey(User,
-                                   to_field="user_tg_id",
-                                   db_column="user_tg_id",
+                                   to_field="user_tg_id", db_column="user_tg_id",
                                    on_delete=models.CASCADE)
     event_name = models.CharField(max_length=100, unique=True)
     event_date = models.DateField()

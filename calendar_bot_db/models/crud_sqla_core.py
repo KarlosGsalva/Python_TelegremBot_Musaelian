@@ -35,8 +35,10 @@ async def write_event_in_db(user_tg_id: int,
                             event_time: time,
                             event_details: str) -> None:
     try:
+        logger.debug(f"user_tg_id в write_event_in_db = {user_tg_id}")
         event_date = dt.strptime(event_date, "%d.%m.%Y")
         async with async_engine.begin() as connection:
+            logger.debug(f"user_tg_id в connection = {user_tg_id}")
             await check_or_create_exists_user(user_tg_id)
 
             await connection.execute(events.insert().values(

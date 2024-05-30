@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no,
+                   initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Мой календарь</title>
+</head>
+<body>
+    <h1>Мой календарь</h1>
+    <ul>
+            {% if combined_list %}
+                {% for item in combined_list %}
+                    {% if item.event_date %}
+                        <!-- Это событие -->
+                        <li>
+                            <h3>{{ item.event_name }}</h3>
+                            <p>Date: {{ item.event_date }}</p>
+                            <p>Time: {{ item.event_time }}</p>
+                            <p>Details: {{ item.event_details }}</p>
+                        </li>
+                    {% else %}
+                        <!-- Это встреча -->
+                        <li>
+                            <h3>{{ item.meeting_name }}</h3>
+                            <p>Date: {{ item.date }}</p>
+                            <p>Time: {{ item.time }}</p>
+                            <p>Duration: {{ item.duration }}</p>
+                            <p>End_time: {{ item.end_time }}</p>
+                            <p>Details: {{ item.details }}</p>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>У вас нет назначенных встреч и событий.</p>
+            {% endif %}
+        </ul>
+</body>
+</html>

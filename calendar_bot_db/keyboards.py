@@ -124,3 +124,12 @@ async def accept_decline_meeting_buttons(participant_id, meeting_id):
     except Exception as e:
         logger.debug(f"Произошла ошибка в accept_decline_meeting_buttons {e}")
         return None
+
+
+async def make_url_link_button(calendar_url):
+    try:
+        login_button = InlineKeyboardButton(text="Мой календарь", url=calendar_url)
+        return _make_inline_keyboard([login_button])
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в make_url_login_button {e}")
+        return None
