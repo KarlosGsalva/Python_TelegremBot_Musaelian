@@ -8,6 +8,15 @@ class FSMCreateEvent(StatesGroup):
     fill_event_details = State()
 
 
+class FSMCreateMeeting(StatesGroup):
+    fill_meeting_name = State()
+    fill_meeting_date = State()
+    fill_meeting_time = State()
+    fill_meeting_duration = State()
+    fill_meeting_participants = State()
+    fill_meeting_details = State()
+
+
 class FSMEditEvent(StatesGroup):
     choose_event = State()
     choose_event_point = State()
@@ -20,6 +29,8 @@ class FSMEditEvent(StatesGroup):
 class FSMMenuOptions(StatesGroup):
     read_event = State()
     delete_event = State()
+    read_meeting = State()
+    delete_meeting = State()
 
 
 class FSMRegistryUser(StatesGroup):
