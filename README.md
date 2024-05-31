@@ -11,4 +11,5 @@ karlenmusaelian@gmail.com
 Требуется перенастроить:
 
 .example_env -> .env
+
 settings_template.py -> settings.py
