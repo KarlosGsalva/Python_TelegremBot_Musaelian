@@ -152,3 +152,27 @@ async def make_url_link_button(calendar_url):
     except Exception as e:
         logger.debug(f"Произошла ошибка в make_url_login_button {e}")
         return None
+
+
+async def make_events_meetings_as_buttons(events_data: dict):
+    try:
+        buttons: list[InlineKeyboardButton] = []
+        logger.debug(f"events_data in make_events_meetings_as_buttons = {events_data}")
+
+        for event in events_data:
+            logger.debug(f"event in for event in events_data: = {event}")
+
+            text = events_data[event]["name"]
+            logger.debug(f"text in for event in events_data: = {events_data[event]['name']}")
+
+            callback_data = f"event_btn_{events_data[event]['name']}"
+            logger.debug(f"callback_data in for event in events_data: = {callback_data}")
+
+            buttons.append(InlineKeyboardButton(text=text, callback_data=callback_data))
+            logger.debug(f"event buttons in make_events_meetings_as_buttons = {buttons}")
+
+        buttons.append(cancel_button)
+        return _make_inline_keyboard(buttons=buttons, width=1)
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в make_events_meetings_as_buttons {e}")
+        return None

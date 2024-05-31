@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from aiogram import Bot
 from aiogram.types import BotCommandScopeAllPrivateChats, BotCommand, InlineKeyboardMarkup
@@ -13,18 +14,26 @@ def is_number(num):
     try:
         return int(num)
     except Exception as e:
-        logger.debug(f"Вместо длительности в минутах введено неверное значение {e}")
+        logger.debug(f"Произошла ошибка в is_number = {e}")
         return False
 
 
 def convert_str_to_time(chosen_time: str):
-    new_event_time = time(*[int(tm) for tm in chosen_time.split(":")])
-    return new_event_time
+    try:
+        new_event_time = time(*[int(tm) for tm in chosen_time.split(":")])
+        return new_event_time
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в convert_str_to_time = {e}")
+        return None
 
 
-def split_callback_to_name_id(callback: str) -> dict:
-    name, id = callback.split("__")
-    return {"name": name, "id": int(id)}
+def split_callback_to_name_id(callback: str) -> Optional[dict]:
+    try:
+        name, id = callback.split("__")
+        return {"name": name, "id": int(id)}
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в split_callback_to_name_id = {e}")
+        return None
 
 
 def hash_password(password: str) -> str:
@@ -47,6 +56,14 @@ def inline_keyboards_are_different(kb1: InlineKeyboardMarkup, kb2: InlineKeyboar
     return False
 
 
+def make_dict_to_str(dictionary: dict):
+    try:
+        return "\n".join(f"{k}: {v}" for k, v in dictionary.items())
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в make_dict_to_str {e}")
+        return None
+
+
 async def set_main_menu_cmds(bot: Bot):
     commands = [
         BotCommand(command="start", description="Начать работу"),
@@ -60,6 +77,7 @@ async def set_main_menu_cmds(bot: Bot):
         BotCommand(command="8", description="Показать список встреч"),
         BotCommand(command="9", description="Удалить встречу"),
         BotCommand(command="10", description="Показать мой календарь"),
+        BotCommand(command="11", description="Поделиться событием"),
     ]
     await bot.set_my_commands(
         commands=commands,

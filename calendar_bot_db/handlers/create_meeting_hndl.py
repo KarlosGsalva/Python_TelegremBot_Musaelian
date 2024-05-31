@@ -54,7 +54,9 @@ async def set_meeting_duration(message: Message, state: FSMContext):
     if duration.isdigit():
         await message.answer(f"Планируемое время встречи {duration} минут.")
         await state.update_data(duration=duration, participants=[])
+
         keyboard = await kb.make_users_as_buttons(message.from_user.id)
+
         await message.answer(WTEXT["request_meeting_participants"], reply_markup=keyboard)
         await state.set_state(FSMCreateMeeting.fill_meeting_participants)
     else:

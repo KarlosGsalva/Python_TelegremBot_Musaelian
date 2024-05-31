@@ -31,6 +31,9 @@ class FSMMenuOptions(StatesGroup):
     delete_event = State()
     read_meeting = State()
     delete_meeting = State()
+    choice_for_share = State()
+    choose_participant = State()
+    send_event = State()
 
 
 class FSMRegistryUser(StatesGroup):

@@ -219,7 +219,7 @@ async def accept_decline_invite(participant_id: int, meeting_id: int,
         return None
 
 
-async def get_calendar_events(user_tg_id):
+async def get_calendar_events(user_tg_id, for_keyboard=False, for_callback=False):
     try:
         async with async_engine.begin() as connection:
             query_event = select(
@@ -253,8 +253,8 @@ async def get_calendar_events(user_tg_id):
                 combined_data.append({
                     "type": "Событие",
                     "name": row.event_name,
-                    "date": row.event_date,
-                    "time": row.event_time,
+                    "date": row.event_date.strftime("%d.%m.%Y"),
+                    "time": row.event_time.strftime("%H:%M"),
                     "details": row.event_details
                 })
 
@@ -262,14 +262,24 @@ async def get_calendar_events(user_tg_id):
                 combined_data.append({
                     "type": "Встреча",
                     "name": row.meeting_name,
-                    "date": row.date,
-                    "time": row.time,
-                    "duration": row.duration,
-                    "end_time": row.end_time,
+                    "date": row.date.strftime("%d.%m.%Y"),
+                    "time": row.time.strftime("%H:%M"),
+                    "duration": str(row.duration),
+                    "end_time": row.end_time.strftime("%H:%M"),
                     "details": row.details
                 })
 
             combined_data.sort(key=lambda x: (x["date"], x["time"], x["name"]))
+            logger.debug(f"combined_data in get_calendar_events = {combined_data}")
+
+            if for_keyboard:
+                return combined_data
+
+            if for_callback:
+                events_data: dict = {}
+                for event in combined_data:
+                    events_data[event["name"]] = event
+                return events_data
 
             result_string = ""
             for item in combined_data:
