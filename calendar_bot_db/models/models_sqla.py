@@ -35,7 +35,6 @@ botstatistics = Table(
     Column("edited_events", Integer, CheckConstraint("edited_events >= 0")),
     Column("canceled_events", Integer, CheckConstraint("canceled_events >= 0")),
     Column("meeting_count", Integer, CheckConstraint("canceled_events >= 0")),
-    Column("edited_meetings", Integer, CheckConstraint("canceled_events >= 0")),
     Column("canceled_meetings", Integer, CheckConstraint("canceled_events >= 0")),
 )
 
