@@ -23,8 +23,8 @@ def convert_str_to_time(chosen_time: str):
 
 
 def split_callback_to_name_id(callback: str) -> dict:
-    event_name, event_id = callback.split("__")
-    return {"event_name": event_name, "event_id": int(event_id)}
+    name, id = callback.split("__")
+    return {"name": name, "id": int(id)}
 
 
 def hash_password(password: str) -> str:
@@ -58,7 +58,8 @@ async def set_main_menu_cmds(bot: Bot):
         BotCommand(command="6", description="Регистрация"),
         BotCommand(command="7", description="Создать встречу"),
         BotCommand(command="8", description="Показать список встреч"),
-        BotCommand(command="9", description="Показать мой календарь"),
+        BotCommand(command="9", description="Удалить встречу"),
+        BotCommand(command="10", description="Показать мой календарь"),
     ]
     await bot.set_my_commands(
         commands=commands,

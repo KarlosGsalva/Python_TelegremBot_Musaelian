@@ -1,6 +1,6 @@
 from logging.config import fileConfig
-from calendar_bot_db.models.models_core import users, events  # noqa
-from calendar_bot_db.models.models_core import metadata_obj
+from calendar_bot_db.models.models_sqla import users, events  # noqa
+from calendar_bot_db.models.models_sqla import metadata_obj
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool

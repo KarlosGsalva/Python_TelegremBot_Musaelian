@@ -8,7 +8,7 @@ from aiogram.types import Message, InlineKeyboardMarkup
 from sqlalchemy import select, update, and_, delete, or_, not_, insert
 from sqlalchemy.sql import func
 
-from calendar_bot_db.models.models_core import users, events, botstatistics, meetings, meeting_participants
+from calendar_bot_db.models.models_sqla import users, events, botstatistics, meetings, meeting_participants
 from calendar_bot_db.models.config import async_engine
 
 from calendar_bot_db.services import hash_password
@@ -87,34 +87,31 @@ async def get_user_busy_slots(user_tg_id):
         return None
 
 
-async def book_meeting(organizer, participant_ids, date,
-                       start_time, duration, details, event_id=None):
+async def gather_user_meetings_db(user_tg_id: int) -> Optional[dict]:
     try:
-        checked_participants = []
         async with async_engine.begin() as connection:
-            for participant_id in participant_ids:
-                if not is_user_available(connection, participant_id, date, start_time, duration):
-                    checked_participants.append(participant_id)
+            result = await connection.execute(
+                select(meetings).where(meetings.c.user_tg_id == user_tg_id))
 
-            create_meeting = insert(meetings).values(
-                organizer=organizer,
-                date=date,
-                time=start_time,
-                duration=duration,
-                details=details,
-                event_id=event_id
-            )
-            result = connection.execute(create_meeting)
-            meeting_id = result.inserted_primary_key[0]
-
-            participants_data = [
-                {"meeting_id": meeting_id, "participant_id": participant_id}
-                for participant_id in participant_ids
-            ]
-
-            connection.execute(insert(meeting_participants), participants_data)
+            # Переделываем словарь, чтобы обращаться к встречам по id
+            meetings_data: dict = {event["id"]: event for event in result.mappings().all()}
+            logger.debug(f"meetings_data в gather_user_meetings_db = {meetings_data}")
+            return meetings_data
     except Exception as e:
-        logger.debug(f"Ошибка в book_meeting {e}")
+        logger.debug(f"Произошла ошибка в gather_user_meetings_db {e}")
+        return None
+
+
+async def delete_meeting(user_tg_id: int, meeting_id: int) -> None:
+    try:
+        async with async_engine.begin() as connection:
+            await connection.execute(
+                delete(meetings).where(
+                    and_(meetings.c.user_tg_id == user_tg_id,
+                         meetings.c.id == meeting_id))
+            )
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в delete_meeting {e}")
         return None
 
 

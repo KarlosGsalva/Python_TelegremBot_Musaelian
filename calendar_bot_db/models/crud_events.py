@@ -6,7 +6,7 @@ from datetime import datetime as dt
 from sqlalchemy import select, update, and_, delete
 from sqlalchemy.sql import func
 
-from calendar_bot_db.models.models_core import users, events, botstatistics
+from calendar_bot_db.models.models_sqla import users, events, botstatistics
 from calendar_bot_db.models.config import async_engine
 
 from calendar_bot_db.services import hash_password
@@ -50,7 +50,7 @@ async def write_event_in_db(user_tg_id: int,
         return None
 
 
-async def gather_all_events_db(user_tg_id: int) -> Optional[dict]:
+async def gather_user_events_db(user_tg_id: int) -> Optional[dict]:
     try:
         async with async_engine.begin() as connection:
             result = await connection.execute(
@@ -66,7 +66,7 @@ async def gather_all_events_db(user_tg_id: int) -> Optional[dict]:
 
 async def read_selected_event(user_tg_id: int, event_id: int) -> Optional[str]:
     try:
-        events: dict = await gather_all_events_db(user_tg_id)
+        events: dict = await gather_user_events_db(user_tg_id)
 
         event_name = f'Событие: {events[event_id]["event_name"]}'
         event_date = f'Дата события: {dt.strftime(events[event_id]["event_date"], "%d.%m.%Y")}'
@@ -140,13 +140,20 @@ async def save_registry_user_data(user_tg_id: int,
 
 async def update_statistics(event_count: bool = False,
                             edited_events: bool = False,
-                            canceled_events: bool = False) -> None:
+                            canceled_events: bool = False,
+                            meeting_count: bool = False,
+                            edited_meetings: bool = False,
+                            canceled_meetings: bool = False
+                            ) -> None:
     current_date = dt.today().date()
     try:
         stat_to_update = {
             "event_count": event_count,
             "edited_events": edited_events,
-            "canceled_events": canceled_events
+            "canceled_events": canceled_events,
+            "meeting_count": meeting_count,
+            "edited_meetings": edited_meetings,
+            "canceled_meetings": canceled_meetings
         }
 
         stmt_to_update = []
@@ -179,7 +186,10 @@ async def update_statistics(event_count: bool = False,
                            user_count=0,
                            event_count=0,
                            edited_events=0,
-                           canceled_events=0)
+                           canceled_events=0,
+                           meeting_count=0,
+                           edited_meetings=0,
+                           canceled_meetings=0)
                 )
             for stmt in stmt_to_update:
                 await connection.execute(stmt)

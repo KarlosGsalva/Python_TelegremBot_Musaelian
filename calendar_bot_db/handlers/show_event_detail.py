@@ -8,7 +8,7 @@ from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
 
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
-from calendar_bot_db.models import crud_events_core as db
+from calendar_bot_db.models import crud_events as db
 from calendar_bot_db.states import FSMCreateEvent, FSMMenuOptions
 
 import calendar_bot_db.keyboards as kb
@@ -32,7 +32,7 @@ async def show_event(message: Message, state: FSMContext):
 
 @router.callback_query(StateFilter(FSMMenuOptions.read_event))
 async def show_requested_event(callback: CallbackQuery, state: FSMContext):
-    event_id: int = split_callback_to_name_id(callback.data)["event_id"]
+    event_id: int = split_callback_to_name_id(callback.data)["id"]
     user_tg_id: int = callback.from_user.id
     event_data = await db.read_selected_event(user_tg_id, event_id)
     await callback.answer()  # Подтверждаем получение callback

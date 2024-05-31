@@ -18,7 +18,7 @@ NGROK_URL = settings.NGROK_URL
 
 
 # Хэндлер для показа всех событий
-@router.message(Command(commands=["9"]), StateFilter(default_state))
+@router.message(Command(commands=["10"]), StateFilter(default_state))
 async def show_all_events(message: Message):
     calendar_url = f"{NGROK_URL}calendar/?id={message.from_user.id}"
     keyboard = await kb.make_url_link_button(calendar_url)

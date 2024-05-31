@@ -7,7 +7,7 @@ from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
 
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
-from calendar_bot_db.models.crud_events_core import check_or_create_exists_user
+from calendar_bot_db.models.crud_events import check_or_create_exists_user
 
 logger = logging.getLogger(__name__)
 

@@ -7,7 +7,7 @@ from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
 from aiogram_dialog import DialogManager
 
-from calendar_bot_db.models import crud_events_core as db
+from calendar_bot_db.models import crud_events as db
 from calendar_bot_db.models import crud_meetings as dbm
 from calendar_bot_db.models.config import async_engine
 from calendar_bot_db.services import convert_str_to_time
@@ -133,6 +133,6 @@ async def write_event_details(message: Message, state: FSMContext):
                                        text=text_for_send,
                                        reply_markup=keyboard)
 
-    await db.update_statistics(event_count=True)
+    await db.update_statistics(meeting_count=True)
     await message.answer(WTEXT["meeting_made"])
     await state.clear()

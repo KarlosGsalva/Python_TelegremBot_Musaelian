@@ -41,6 +41,9 @@ class BotStatistics(models.Model):
     event_count = models.PositiveIntegerField(default=0)
     edited_events = models.PositiveIntegerField(default=0)
     canceled_events = models.PositiveIntegerField(default=0)
+    meeting_count = models.PositiveIntegerField(default=0)
+    edited_meetings = models.PositiveIntegerField(default=0)
+    canceled_meetings = models.PositiveIntegerField(default=0)
 
     class Meta:
         db_table = "botstatistics"

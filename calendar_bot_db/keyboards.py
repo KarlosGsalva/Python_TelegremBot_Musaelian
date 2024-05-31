@@ -4,7 +4,7 @@ from aiogram.utils.keyboard import (InlineKeyboardButton,
                                     InlineKeyboardMarkup,
                                     InlineKeyboardBuilder)
 
-from calendar_bot_db.models import crud_events_core as db
+from calendar_bot_db.models import crud_events as db
 from calendar_bot_db.models import crud_meetings as dbm
 from typing import Optional
 
@@ -47,7 +47,7 @@ def time_keyboard() -> Optional[InlineKeyboardMarkup]:
 async def make_events_as_buttons(user_tg_id: int) -> Optional[InlineKeyboardMarkup]:
     try:
         buttons: list[InlineKeyboardButton] = []
-        events: dict = await db.gather_all_events_db(user_tg_id)
+        events: dict = await db.gather_user_events_db(user_tg_id)
 
         for detail in events.values():
             button = InlineKeyboardButton(text=detail["event_name"],
@@ -58,6 +58,24 @@ async def make_events_as_buttons(user_tg_id: int) -> Optional[InlineKeyboardMark
         return _make_inline_keyboard(buttons, width=1)
     except Exception as e:
         logger.debug(f"Произошла ошибка в make_events_as_buttons {e}")
+        return None
+
+
+async def make_meetings_as_buttons(user_tg_id: int) -> Optional[InlineKeyboardMarkup]:
+    try:
+        buttons: list[InlineKeyboardButton] = []
+        meetings: dict = await dbm.gather_user_meetings_db(user_tg_id)
+
+        for detail in meetings.values():
+            logger.debug(f"detail В make_meetings_as_buttons = {detail}")
+            button = InlineKeyboardButton(text=detail["meeting_name"],
+                                          callback_data=f"{detail['meeting_name']}__{detail['id']}")
+            buttons.append(button)
+
+        buttons.append(cancel_button)
+        return _make_inline_keyboard(buttons, width=1)
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в make_meetings_as_buttons {e}")
         return None
 
 

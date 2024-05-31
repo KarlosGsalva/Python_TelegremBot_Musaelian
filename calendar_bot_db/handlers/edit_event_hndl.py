@@ -8,7 +8,7 @@ from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
 
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
-from calendar_bot_db.models import crud_events_core as db
+from calendar_bot_db.models import crud_events as db
 from calendar_bot_db.states import FSMEditEvent
 
 import calendar_bot_db.keyboards as kb
@@ -30,7 +30,7 @@ async def choose_event_for_edit(message: Message, state: FSMContext):
 
 @router.callback_query(StateFilter(FSMEditEvent.choose_event))
 async def choose_event_point_for_edit(callback: CallbackQuery, state: FSMContext):
-    event_id: int = split_callback_to_name_id(callback.data)["event_id"]
+    event_id: int = split_callback_to_name_id(callback.data)["id"]
     user_tg_id: int = callback.from_user.id
     await state.update_data(event_id=event_id, user_tg_id=user_tg_id)
     await callback.message.answer(text=WTEXT["request_event_point_for_edit"],

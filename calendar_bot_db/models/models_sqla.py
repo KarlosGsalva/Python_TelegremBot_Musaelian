@@ -18,7 +18,8 @@ users = Table(
 events = Table(
     "events", metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("user_tg_id", BigInteger, ForeignKey("users.user_tg_id")),
+    Column("user_tg_id", BigInteger, ForeignKey(
+        "users.user_tg_id", ondelete="CASCADE")),
     Column("event_name", String, nullable=False, unique=True),
     Column("event_date", Date, default=func.current_date()),
     Column("event_time", Time, default=func.current_time()),
@@ -33,6 +34,9 @@ botstatistics = Table(
     Column("event_count", Integer, CheckConstraint("event_count >= 0")),
     Column("edited_events", Integer, CheckConstraint("edited_events >= 0")),
     Column("canceled_events", Integer, CheckConstraint("canceled_events >= 0")),
+    Column("meeting_count", Integer, CheckConstraint("canceled_events >= 0")),
+    Column("edited_meetings", Integer, CheckConstraint("canceled_events >= 0")),
+    Column("canceled_meetings", Integer, CheckConstraint("canceled_events >= 0")),
 )
 
 participant_status_enum = ENUM('CF', 'CL', 'PD', name='meetingstatus', metadata=metadata_obj)
@@ -40,7 +44,8 @@ participant_status_enum = ENUM('CF', 'CL', 'PD', name='meetingstatus', metadata=
 meetings = Table(
     "meetings", metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("user_tg_id", BigInteger, ForeignKey("users.user_tg_id"), nullable=False),
+    Column("user_tg_id", BigInteger, ForeignKey(
+        "users.user_tg_id", ondelete="CASCADE"), nullable=False),
     Column("event_id", Integer, ForeignKey("events.id"), nullable=True),
     Column("meeting_name", String, nullable=False),
     Column("date", Date, nullable=False),
@@ -52,8 +57,10 @@ meetings = Table(
 
 meeting_participants = Table(
     "meeting_participants", metadata_obj,
-    Column("meeting_id", Integer, ForeignKey("meetings.id"), primary_key=True),
-    Column("user_tg_id", BigInteger, ForeignKey("users.user_tg_id"), primary_key=True),
+    Column("meeting_id", Integer, ForeignKey(
+        "meetings.id", ondelete="CASCADE"), primary_key=True),
+    Column("user_tg_id", BigInteger, ForeignKey(
+        "users.user_tg_id", ondelete="CASCADE"), primary_key=True),
     Column("status", participant_status_enum, default="PD", nullable=False),
     UniqueConstraint('meeting_id', 'user_tg_id', name='uix_meeting_participants')
 )

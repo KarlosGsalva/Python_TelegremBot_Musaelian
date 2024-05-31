@@ -13,7 +13,7 @@ from calendar_bot_db.handlers import (start_cmd_hdlrs, show_event_detail, show_e
                                       register_hdlr, create_event_hndl, edit_event_hndl,
                                       delete_event_hndl, cancel_hdlrs, end_cap_hndl,
                                       create_meeting_hndl, accept_decline_hndl, show_user_meetings,
-                                      show_my_calendar_hndl)
+                                      show_my_calendar_hndl, delete_meeting_hndl)
 
 
 from colorlog import ColoredFormatter
@@ -65,9 +65,10 @@ async def on_startup() -> None:
     setup_dialogs(dp)
 
     # Регистрируем роутеры
-    dp.include_router(show_my_calendar_hndl.router)
     dp.include_router(start_cmd_hdlrs.router)
     dp.include_router(cancel_hdlrs.router)
+    dp.include_router(show_my_calendar_hndl.router)
+    dp.include_router(delete_meeting_hndl.router)
     dp.include_router(show_user_meetings.router)
     dp.include_router(accept_decline_hndl.router)
     dp.include_router(create_meeting_hndl.router)
