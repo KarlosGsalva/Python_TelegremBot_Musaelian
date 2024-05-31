@@ -83,3 +83,4 @@ async def send_choosen_event(callback: CallbackQuery, state: FSMContext):
     for member in participants:
         await callback.bot.send_message(text=data["choosen_event_details"], chat_id=member)
     await callback.message.answer("Событие отправлено")
+    await state.clear()
