@@ -9,11 +9,12 @@ from calendar_bot_db.dialog_choose_dates import (set_calendar_window_for_event,
                                                  edit_event_date_calendar_window,
                                                  set_calendar_window_for_meeting)
 from calendar_bot_db.models.config import settings, storage
-from calendar_bot_db.handlers import (start_cmd_hdlrs, show_event_detail, show_events_hndl,
-                                      register_hdlr, create_event_hndl, edit_event_hndl,
-                                      delete_event_hndl, cancel_hdlrs, end_cap_hndl,
-                                      create_meeting_hndl, accept_decline_hndl, show_user_meetings,
-                                      show_my_calendar_hndl, delete_meeting_hndl, share_event_hndl)
+from calendar_bot_db.handlers import (start_cmds, show_event, show_events,
+                                      register, create_event, edit_event,
+                                      delete_event, cancel, end_cap,
+                                      create_meeting, accept_decline, show_user_meetings,
+                                      show_my_calendar, delete_meeting, share_event,
+                                      publish_events)
 
 
 from colorlog import ColoredFormatter
@@ -65,21 +66,22 @@ async def on_startup() -> None:
     setup_dialogs(dp)
 
     # Регистрируем роутеры
-    dp.include_router(start_cmd_hdlrs.router)
-    dp.include_router(cancel_hdlrs.router)
-    dp.include_router(share_event_hndl.router)
-    dp.include_router(show_my_calendar_hndl.router)
-    dp.include_router(delete_meeting_hndl.router)
+    dp.include_router(start_cmds.router)
+    dp.include_router(cancel.router)
+    dp.include_router(publish_events.router)
+    dp.include_router(share_event.router)
+    dp.include_router(show_my_calendar.router)
+    dp.include_router(delete_meeting.router)
     dp.include_router(show_user_meetings.router)
-    dp.include_router(accept_decline_hndl.router)
-    dp.include_router(create_meeting_hndl.router)
-    dp.include_router(show_events_hndl.router)
-    dp.include_router(show_event_detail.router)
-    dp.include_router(register_hdlr.router)
-    dp.include_router(create_event_hndl.router)
-    dp.include_router(edit_event_hndl.router)
-    dp.include_router(delete_event_hndl.router)
-    dp.include_router(end_cap_hndl.router)
+    dp.include_router(accept_decline.router)
+    dp.include_router(create_meeting.router)
+    dp.include_router(show_events.router)
+    dp.include_router(show_event.router)
+    dp.include_router(register.router)
+    dp.include_router(create_event.router)
+    dp.include_router(edit_event.router)
+    dp.include_router(delete_event.router)
+    dp.include_router(end_cap.router)
 
     # Установка команд основного меню бота
     await set_main_menu_cmds(bot=bot)

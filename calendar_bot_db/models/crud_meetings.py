@@ -138,6 +138,50 @@ async def gather_all_users_db(user_tg_id: int) -> Optional[dict]:
         return None
 
 
+# --------------------------------
+
+async def change_event_visibility(user_tg_id: int, event_name: str, publish=False) -> Optional[dict]:
+    try:
+        async with async_engine.begin() as connection:
+            visibility = "PB" if publish else "PR"
+            current_visibility = "PR" if publish else "PB"
+
+            query = update(events).where(
+                events.c.user_tg_id == user_tg_id,
+                events.c.event_name == event_name,
+                events.c.visibility == current_visibility
+            ).values(visibility=visibility)
+
+            result = await connection.execute(query)
+            logger.debug(f"Result: {result.rowcount} rows affected.")
+            return {"status": "success"} if result.rowcount > 0 else None
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в change_event_visibility = {e}")
+        return None
+
+
+async def change_meeting_visibility(user_tg_id: int, meeting_name: str, publish=False) -> Optional[dict]:
+    try:
+        async with async_engine.begin() as connection:
+            visibility = "PB" if publish else "PR"
+            current_visibility = "PR" if publish else "PB"
+
+            query = update(meetings).where(
+                meetings.c.user_tg_id == user_tg_id,
+                meetings.c.meeting_name == meeting_name,
+                meetings.c.visibility == current_visibility
+            ).values(visibility=visibility)
+
+            result = await connection.execute(query)
+            logger.debug(f"Result: {result.rowcount} rows affected.")
+            return {"status": "success"} if result.rowcount > 0 else None
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в change_meeting_visibility = {e}")
+        return None
+
+# --------------------------------
+
+
 async def write_meeting_in_db(organizer: int,
                               meeting_name: str,
                               meeting_date: str,

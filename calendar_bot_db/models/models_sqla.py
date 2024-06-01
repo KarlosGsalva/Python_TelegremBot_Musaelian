@@ -15,6 +15,8 @@ users = Table(
     Column("password_hash", String(150)),
 )
 
+visibility_status_enum = ENUM("PB", "PR", name="visibility", metadata=metadata_obj)
+
 events = Table(
     "events", metadata_obj,
     Column("id", Integer, primary_key=True),
@@ -24,6 +26,7 @@ events = Table(
     Column("event_date", Date, default=func.current_date()),
     Column("event_time", Time, default=func.current_time()),
     Column("event_details", String),
+    Column("visibility", visibility_status_enum, default="PR", nullable=False)
 )
 
 botstatistics = Table(
@@ -38,8 +41,6 @@ botstatistics = Table(
     Column("canceled_meetings", Integer, CheckConstraint("canceled_events >= 0")),
 )
 
-participant_status_enum = ENUM('CF', 'CL', 'PD', name='meetingstatus', metadata=metadata_obj)
-
 meetings = Table(
     "meetings", metadata_obj,
     Column("id", Integer, primary_key=True),
@@ -51,8 +52,11 @@ meetings = Table(
     Column("time", Time, nullable=False),
     Column("duration", Interval, default="00:15:00", nullable=False),
     Column("end_time", Time, nullable=False),
-    Column("details", String, nullable=True)
+    Column("details", String, nullable=True),
+    Column("visibility", visibility_status_enum, default="PR", nullable=False)
 )
+
+participant_status_enum = ENUM('CF', 'CL', 'PD', name='meetingstatus', metadata=metadata_obj)
 
 meeting_participants = Table(
     "meeting_participants", metadata_obj,

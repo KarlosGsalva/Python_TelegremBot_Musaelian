@@ -33,7 +33,8 @@ async def write_event_in_db(user_tg_id: int,
                             event_name: str,
                             event_date: str,
                             event_time: time,
-                            event_details: str) -> None:
+                            event_details: str,
+                            visibility="PR") -> None:
     try:
         logger.debug(f"user_tg_id в write_event_in_db = {user_tg_id}")
         event_date = dt.strptime(event_date, "%d.%m.%Y")
@@ -44,29 +45,36 @@ async def write_event_in_db(user_tg_id: int,
             await connection.execute(events.insert().values(
                 user_tg_id=user_tg_id, event_name=event_name,
                 event_date=event_date, event_time=event_time,
-                event_details=event_details))
+                event_details=event_details, visibility=visibility))
     except Exception as e:
         logger.debug(f"Произошла ошибка в write_event_in_db {e}")
         return None
 
 
-async def gather_user_events_db(user_tg_id: int) -> Optional[dict]:
+async def gather_user_or_events_db(user_tg_id: int, key_name=False) -> Optional[dict]:
     try:
         async with async_engine.begin() as connection:
             result = await connection.execute(
                 select(events).where(events.c.user_tg_id == user_tg_id))
 
-            # Переделываем словарь, чтобы обращаться к событиям по id
-            events_data: dict = {event["id"]: event for event in result.mappings().all()}
-            return events_data
+            if not key_name:
+                # Переделываем словарь, чтобы обращаться к событиям по id
+                events_data: dict = {event["id"]: event for event in result.mappings().all()}
+                logger.debug(f"events_data в gather_user_or_events_db = {events_data}")
+                return events_data
+            elif key_name:
+                # Переделываем словарь, чтобы обращаться к событиям по event_name
+                events_data: dict = {event["event_name"]: event for event in result.mappings().all()}
+                logger.debug(f"events_data в gather_user_or_events_db key_name=True = {events_data}")
+                return events_data
     except Exception as e:
-        logger.debug(f"Произошла ошибка в gather_all_events_db {e}")
+        logger.debug(f"Произошла ошибка в gather_user_or_events_db {e}")
         return None
 
 
 async def read_selected_event(user_tg_id: int, event_id: int) -> Optional[str]:
     try:
-        events: dict = await gather_user_events_db(user_tg_id)
+        events: dict = await gather_user_or_events_db(user_tg_id)
 
         event_name = f'Событие: {events[event_id]["event_name"]}'
         event_date = f'Дата события: {dt.strftime(events[event_id]["event_date"], "%d.%m.%Y")}'
@@ -142,7 +150,6 @@ async def update_statistics(event_count: bool = False,
                             edited_events: bool = False,
                             canceled_events: bool = False,
                             meeting_count: bool = False,
-                            edited_meetings: bool = False,
                             canceled_meetings: bool = False
                             ) -> None:
     current_date = dt.today().date()
@@ -152,7 +159,6 @@ async def update_statistics(event_count: bool = False,
             "edited_events": edited_events,
             "canceled_events": canceled_events,
             "meeting_count": meeting_count,
-            "edited_meetings": edited_meetings,
             "canceled_meetings": canceled_meetings
         }
 
@@ -188,7 +194,6 @@ async def update_statistics(event_count: bool = False,
                            edited_events=0,
                            canceled_events=0,
                            meeting_count=0,
-                           edited_meetings=0,
                            canceled_meetings=0)
                 )
             for stmt in stmt_to_update:

@@ -34,6 +34,7 @@ class FSMMenuOptions(StatesGroup):
     choice_for_share = State()
     choose_participant = State()
     send_event = State()
+    publish_event = State()
 
 
 class FSMRegistryUser(StatesGroup):

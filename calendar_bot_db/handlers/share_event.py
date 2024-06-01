@@ -40,16 +40,11 @@ async def create_meeting(message: Message, state: FSMContext):
 @router.callback_query(F.data.startswith("event_btn_"), StateFilter(FSMMenuOptions.choice_for_share))
 async def get_meeting_name(callback: CallbackQuery, state: FSMContext):
     user_tg_id = callback.from_user.id
+
     data = await state.get_data()
     keyboard = await kb.make_users_as_buttons(user_tg_id)
-
     event_key = callback.data.replace("event_btn_", "")
-    logger.debug(f"event_key = {event_key}")
-    logger.debug(f"data = {data}")
-    logger.debug(f"data[event_key] = {data[event_key]}")
-
     choosen_event_details = make_dict_to_str(data[event_key])
-    logger.debug(f"choosen_event_details = {choosen_event_details}")
 
     await state.update_data(event=event_key, choosen_event_details=choosen_event_details)
     await callback.message.answer(text=WTEXT["request_shared_participant"], reply_markup=keyboard)
@@ -67,7 +62,6 @@ async def chose_participant(callback: CallbackQuery, state: FSMContext):
         participants.remove(user_id)
     else:
         participants.append(user_id)
-    logger.debug(f"participants = {participants}")
 
     await state.update_data(participants=participants)
     keyboard = await kb.make_users_as_buttons(callback.from_user.id, participants)

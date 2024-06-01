@@ -8,7 +8,8 @@ from calendar_bot_db.models import crud_events as db
 from calendar_bot_db.models import crud_meetings as dbm
 from typing import Optional
 
-from calendar_bot_db.models.crud_meetings import gather_all_users_db
+from calendar_bot_db.models.crud_events import gather_user_or_events_db
+from calendar_bot_db.models.crud_meetings import gather_all_users_db, get_calendar_events
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ cancel_button = InlineKeyboardButton(text="Отмена", callback_data="cancel"
 keyboard: list[list[InlineKeyboardButton]] = [[cancel_button]]
 cancel_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 participants_selected_btn = InlineKeyboardButton(text="Участники выбраны", callback_data="participants_selected")
+events_selected_btn = InlineKeyboardButton(text="События выбраны", callback_data="events_selected")
 
 
 # Создаем клавиатуру
@@ -47,7 +49,7 @@ def time_keyboard() -> Optional[InlineKeyboardMarkup]:
 async def make_events_as_buttons(user_tg_id: int) -> Optional[InlineKeyboardMarkup]:
     try:
         buttons: list[InlineKeyboardButton] = []
-        events: dict = await db.gather_user_events_db(user_tg_id)
+        events: dict = await db.gather_user_or_events_db(user_tg_id)
 
         for detail in events.values():
             button = InlineKeyboardButton(text=detail["event_name"],
@@ -109,10 +111,6 @@ async def make_users_as_buttons(user_tg_id, selected_participants: list = None
                 text = f"{user['username']} ✔️" if is_selected else f"{user['username']}"
                 callback_data = user["user_id"]
 
-                logger.debug(f"User ID: {user['user_id']}, "
-                             f"Text: {text}, "
-                             f"Callback Data: {callback_data}, "
-                             f"Is selected: {is_selected}")
                 buttons.append(InlineKeyboardButton(text=text, callback_data=callback_data))
         else:
             for user_id, user in all_participants.items():
@@ -125,6 +123,38 @@ async def make_users_as_buttons(user_tg_id, selected_participants: list = None
         return _make_inline_keyboard(buttons, width=1)
     except Exception as e:
         logger.debug(f"Произошла ошибка в make_users_as_buttons {e}")
+        return None
+
+
+async def make_events_as_choosen_buttons(user_tg_id, events_to_publish: list = None
+                                         ) -> Optional[InlineKeyboardMarkup]:
+    try:
+        all_events = await get_calendar_events(user_tg_id=user_tg_id, for_callback=True)
+        logger.debug(f"all_events: {all_events}")
+        buttons = []
+
+        if events_to_publish is not None:
+            logger.debug(f"events_to_publish in make_events_as_choosen_buttons = {events_to_publish}")
+
+            for event in all_events:
+                logger.debug(f"event in cycle for buttons: {event}")
+
+                is_selected = all_events[event]["name"] in events_to_publish
+                text = f"{all_events[event]['name']} ✔️" if is_selected else f"{all_events[event]['name']}"
+                callback_data = all_events[event]["name"]
+
+                buttons.append(InlineKeyboardButton(text=text, callback_data=callback_data))
+        else:
+            for event in all_events:
+                text = f"{all_events[event]['name']}"
+                callback_data = all_events[event]["name"]
+                buttons.append(InlineKeyboardButton(text=text, callback_data=callback_data))
+
+        buttons.append(events_selected_btn)
+        buttons.append(cancel_button)
+        return _make_inline_keyboard(buttons, width=1)
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в make_events_as_choosen_buttons {e}")
         return None
 
 
@@ -157,20 +187,32 @@ async def make_url_link_button(calendar_url):
 async def make_events_meetings_as_buttons(events_data: dict):
     try:
         buttons: list[InlineKeyboardButton] = []
-        logger.debug(f"events_data in make_events_meetings_as_buttons = {events_data}")
 
         for event in events_data:
-            logger.debug(f"event in for event in events_data: = {event}")
-
             text = events_data[event]["name"]
-            logger.debug(f"text in for event in events_data: = {events_data[event]['name']}")
-
             callback_data = f"event_btn_{events_data[event]['name']}"
-            logger.debug(f"callback_data in for event in events_data: = {callback_data}")
-
             buttons.append(InlineKeyboardButton(text=text, callback_data=callback_data))
-            logger.debug(f"event buttons in make_events_meetings_as_buttons = {buttons}")
 
+        buttons.append(cancel_button)
+        return _make_inline_keyboard(buttons=buttons, width=1)
+    except Exception as e:
+        logger.debug(f"Произошла ошибка в make_events_meetings_as_buttons {e}")
+        return None
+
+
+async def get_events_and_meetings_as_buttons(user_tg_id, events_to_publish: list = None):
+    try:
+        events_data = await get_calendar_events(user_tg_id, for_callback=True)
+        logger.debug(f"events_data в get_events_and_meetings_as_buttons = {events_data}")
+        buttons: list[InlineKeyboardButton] = []
+
+        for event in events_data:
+            logger.debug(f"event in events_data = {event}")
+            text = events_data[event]["name"]
+            callback_data = f"event_btn_{events_data[event]['name']}"
+            buttons.append(InlineKeyboardButton(text=text, callback_data=callback_data))
+
+        buttons.append(events_selected_btn)
         buttons.append(cancel_button)
         return _make_inline_keyboard(buttons=buttons, width=1)
     except Exception as e:

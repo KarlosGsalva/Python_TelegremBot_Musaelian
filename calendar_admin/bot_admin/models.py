@@ -20,6 +20,10 @@ class User(models.Model):
 
 
 class Event(models.Model):
+    class VisibilityStatus(models.TextChoices):
+        PUBLISHED = "PB", "Published"
+        PRIVATE = "PR", "Private"
+
     user_tg_id = models.ForeignKey(User,
                                    to_field="user_tg_id", db_column="user_tg_id",
                                    on_delete=models.CASCADE)
@@ -27,6 +31,9 @@ class Event(models.Model):
     event_date = models.DateField()
     event_time = models.TimeField()
     event_details = models.TextField()
+    visibility = models.CharField(max_length=2,
+                                  choices=VisibilityStatus.choices,
+                                  default=VisibilityStatus.PRIVATE)
 
     class Meta:
         db_table = "events"
@@ -54,6 +61,10 @@ class BotStatistics(models.Model):
 
 
 class Meeting(models.Model):
+    class VisibilityStatus(models.TextChoices):
+        PUBLISHED = "PB", "Published"
+        PRIVATE = "PR", "Private"
+
     user_tg_id = models.ForeignKey(User,
                                    to_field="user_tg_id",
                                    db_column="user_tg_id",
@@ -68,6 +79,9 @@ class Meeting(models.Model):
     duration = models.DurationField(default="00:15:00")
     end_time = models.TimeField(null=True, blank=True)
     details = models.TextField(null=True, blank=True)
+    visibility = models.CharField(max_length=2,
+                                  choices=VisibilityStatus.choices,
+                                  default=VisibilityStatus.PRIVATE)
 
     class Meta:
         db_table = "meetings"
