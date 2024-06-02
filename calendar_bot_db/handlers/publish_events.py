@@ -25,14 +25,9 @@ router = Router(name="publish_event_router")
 
 @router.message(Command(commands=["12"]), StateFilter(default_state))
 async def choose_event_for_publish(message: Message, state: FSMContext):
-    # Выгружаем все события пользователя
-    events_data: list[dict] = await get_calendar_events(message.from_user.id, for_keyboard=True)
     keyboard = await kb.make_events_as_choosen_buttons(message.from_user.id)
 
-    # Сохраняем события в storage
-    logger.debug(f"events_data в choose_event_for_publish = {events_data}")
-
-    await state.update_data(events=events_data, events_to_publish=[])
+    await state.update_data(events_to_publish=[])
     await message.answer(text=WTEXT["choose_for_publish"], reply_markup=keyboard)
     await state.set_state(FSMMenuOptions.publish_event)
 
@@ -73,6 +68,8 @@ async def change_event_name(callback: CallbackQuery, state: FSMContext):
     for event in choosen_event_data["events_to_publish"]:
         logger.debug(f"event in 'for event in choosen_event_data['events_to_publish']:' =  {event}")
         await change_event_visibility(callback.from_user.id, event, publish=True)
+    await callback.message.delete_reply_markup()
+    await callback.message.delete()
     await callback.message.answer(text=WTEXT["events_published"])
     await state.clear()
 
