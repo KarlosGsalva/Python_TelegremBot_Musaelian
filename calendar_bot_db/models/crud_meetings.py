@@ -138,8 +138,6 @@ async def gather_all_users_db(user_tg_id: int) -> Optional[dict]:
         return None
 
 
-# --------------------------------
-
 async def change_events_visibility(user_tg_id: int,
                                    events_to_publish: list,
                                    publish=False) -> Optional[dict]:
@@ -175,8 +173,6 @@ async def change_events_visibility(user_tg_id: int,
     except Exception as e:
         logger.debug(f"Произошла ошибка в change_event_visibility = {e}")
         return None
-
-# --------------------------------
 
 
 async def write_meeting_in_db(organizer: int,
@@ -260,10 +256,35 @@ async def accept_decline_invite(participant_id: int, meeting_id: int,
         return None
 
 
-async def get_calendar_events(user_tg_id, for_keyboard=False, for_callback=False, private=True):
+async def get_calendar_events(user_tg_id,
+                              for_keyboard=False,
+                              for_callback=False,
+                              private=True,
+                              publish=False):
     try:
         async with async_engine.begin() as connection:
-            if private:
+            if publish:
+                query_event = select(
+                    events.c.event_name,
+                    events.c.event_date,
+                    events.c.event_time,
+                    events.c.event_details
+                ).where(
+                    events.c.visibility == "PB"
+                )
+
+                query_meeting = select(
+                    meetings.c.meeting_name,
+                    meetings.c.date,
+                    meetings.c.time,
+                    meetings.c.duration,
+                    meetings.c.end_time,
+                    meetings.c.details
+                ).where(
+                    meetings.c.visibility == "PB"
+                )
+
+            elif private:
                 query_event = select(
                     events.c.event_name,
                     events.c.event_date,
@@ -285,6 +306,7 @@ async def get_calendar_events(user_tg_id, for_keyboard=False, for_callback=False
                     meetings.c.user_tg_id == user_tg_id,
                     meetings.c.visibility == "PR"
                 )
+
             else:
                 query_event = select(
                     events.c.event_name,
@@ -358,7 +380,7 @@ async def get_calendar_events(user_tg_id, for_keyboard=False, for_callback=False
                                       f"Время: {item['time']}\n"
                                       f"Длительность: {item['duration']}\n"
                                       f"Время окончания: {item['end_time']}\n"
-                                      f"Описание: {item['details']}\n")
+                                      f"Описание: {item['details']}\n\n")
             return result_string
     except Exception as e:
         logger.debug(f"Произошла ошибка в get_calendar_events {e}")

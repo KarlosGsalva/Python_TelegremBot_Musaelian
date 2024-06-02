@@ -78,7 +78,8 @@ async def set_main_menu_cmds(bot: Bot):
         BotCommand(command="9", description="Удалить встречу"),
         BotCommand(command="10", description="Показать мой календарь"),
         BotCommand(command="11", description="Поделиться событием"),
-        BotCommand(command="12", description="Опубликовать события")
+        BotCommand(command="12", description="Опубликовать события"),
+        BotCommand(command="13", description="Показать публичные события")
     ]
     await bot.set_my_commands(
         commands=commands,
