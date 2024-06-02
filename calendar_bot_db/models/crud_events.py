@@ -61,12 +61,13 @@ async def gather_user_or_events_db(user_tg_id: int, key_name=False) -> Optional[
                 # Переделываем словарь, чтобы обращаться к событиям по id
                 events_data: dict = {event["id"]: event for event in result.mappings().all()}
                 logger.debug(f"events_data в gather_user_or_events_db = {events_data}")
-                return events_data
+
             elif key_name:
                 # Переделываем словарь, чтобы обращаться к событиям по event_name
                 events_data: dict = {event["event_name"]: event for event in result.mappings().all()}
                 logger.debug(f"events_data в gather_user_or_events_db key_name=True = {events_data}")
-                return events_data
+
+            return events_data
     except Exception as e:
         logger.debug(f"Произошла ошибка в gather_user_or_events_db {e}")
         return None
@@ -77,8 +78,8 @@ async def read_selected_event(user_tg_id: int, event_id: int) -> Optional[str]:
         events: dict = await gather_user_or_events_db(user_tg_id)
 
         event_name = f'Событие: {events[event_id]["event_name"]}'
-        event_date = f'Дата события: {dt.strftime(events[event_id]["event_date"], "%d.%m.%Y")}'
-        event_time = f'Время события: {time.strftime(events[event_id]["event_time"], "%H:%M")}'
+        event_date = f'Дата события: {events[event_id]["event_date"].strftime("%m.%d.%Y")}'
+        event_time = f'Время события: {events[event_id]["event_time"].strftime("%H:%M")}'
         event_details = f'Описание: {events[event_id]["event_details"]}'
 
         return '\n'.join([event_name, event_date, event_time, event_details])

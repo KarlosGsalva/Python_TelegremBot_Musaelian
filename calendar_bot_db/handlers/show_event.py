@@ -35,6 +35,7 @@ async def show_requested_event(callback: CallbackQuery, state: FSMContext):
     event_id: int = split_callback_to_name_id(callback.data)["id"]
     user_tg_id: int = callback.from_user.id
     event_data = await db.read_selected_event(user_tg_id, event_id)
+
     await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(WTEXT["show_event"])
     await callback.message.answer(event_data)
