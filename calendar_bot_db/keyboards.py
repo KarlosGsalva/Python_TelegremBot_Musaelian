@@ -126,29 +126,33 @@ async def make_users_as_buttons(user_tg_id, selected_participants: list = None
         return None
 
 
-async def make_events_as_choosen_buttons(user_tg_id, events_to_publish: list = None
+async def make_events_as_choosen_buttons(events_to_publish: list = None,
+                                         all_events: dict = None
                                          ) -> Optional[InlineKeyboardMarkup]:
     try:
-        all_events = await get_calendar_events(user_tg_id=user_tg_id, for_callback=True)
-        logger.debug(f"all_events: {all_events}")
         buttons = []
 
         if events_to_publish is not None:
-            logger.debug(f"events_to_publish in make_events_as_choosen_buttons = {events_to_publish}")
+            for event_key, event_value in all_events.items():
+                if event_value["type"] == "Событие":
+                    event_name = f"Событие: {event_value['name']}"
+                if event_value["type"] == "Встреча":
+                    event_name = f"Встреча: {event_value['name']}"
 
-            for event in all_events:
-                logger.debug(f"event in cycle for buttons: {event}")
+                is_selected = event_name in events_to_publish
+                text = f"{event_name} ✔️" if is_selected else f"{event_name}"
 
-                is_selected = all_events[event]["name"] in events_to_publish
-                text = f"{all_events[event]['name']} ✔️" if is_selected else f"{all_events[event]['name']}"
-                callback_data = all_events[event]["name"]
-
-                buttons.append(InlineKeyboardButton(text=text, callback_data=callback_data))
+                buttons.append(InlineKeyboardButton(text=text, callback_data=event_name))
         else:
-            for event in all_events:
-                text = f"{all_events[event]['name']}"
-                callback_data = all_events[event]["name"]
-                buttons.append(InlineKeyboardButton(text=text, callback_data=callback_data))
+            for event_key, event_value in all_events.items():
+
+                if event_value["type"] == "Событие":
+                    event_name = f"Событие: {event_value['name']}"
+
+                if event_value["type"] == "Встреча":
+                    event_name = f"Встреча: {event_value['name']}"
+
+                buttons.append(InlineKeyboardButton(text=event_name, callback_data=event_name))
 
         buttons.append(events_selected_btn)
         buttons.append(cancel_button)
