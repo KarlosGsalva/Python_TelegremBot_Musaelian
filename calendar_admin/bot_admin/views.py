@@ -4,8 +4,10 @@ import hmac
 import logging
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from rest_framework import viewsets
 
 from .models import User, Event, Meeting
+from .serializers import UserSerializer, MeetingSerializer, EventSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -107,3 +109,18 @@ def export_events_json(request):
     except Exception as e:
         logger.error(f"An error occurred while exporting events to json: {e}")
         return HttpResponse(status=500, content="An error occurred while exporting json events")
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class EventViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = EventSerializer
+
+
+class MeetingViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = MeetingSerializer
