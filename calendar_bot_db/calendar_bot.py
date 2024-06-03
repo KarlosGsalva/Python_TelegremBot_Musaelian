@@ -14,7 +14,8 @@ from calendar_bot_db.handlers import (start_cmds, show_event, show_events,
                                       delete_event, cancel, end_cap,
                                       create_meeting, accept_decline, show_user_meetings,
                                       show_my_calendar, delete_meeting, share_event,
-                                      publish_events, show_published_events)
+                                      publish_events, show_published_events, download_json,
+                                      download_csv)
 
 
 from colorlog import ColoredFormatter
@@ -68,6 +69,8 @@ async def on_startup() -> None:
     # Регистрируем роутеры
     dp.include_router(start_cmds.router)
     dp.include_router(cancel.router)
+    dp.include_router(download_json.router)
+    dp.include_router(download_csv.router)
     dp.include_router(show_published_events.router)
     dp.include_router(publish_events.router)
     dp.include_router(share_event.router)

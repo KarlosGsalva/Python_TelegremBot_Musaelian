@@ -178,17 +178,26 @@ async def accept_decline_meeting_buttons(participant_id, meeting_id):
         return None
 
 
-async def make_url_link_button(calendar_url):
+async def make_url_link_button(button_text: str,
+                               link_url: str,
+                               callback_data: str,
+                               schedule_button: bool = False
+                               ) -> Optional[InlineKeyboardMarkup]:
     try:
-        login_btn = InlineKeyboardButton(text="Мой календарь", url=calendar_url)
-        calendar_btn = InlineKeyboardButton(text="Вывести расписание в чат", callback_data="show_calendar")
-        return _make_inline_keyboard([login_btn, calendar_btn])
+        login_btn = InlineKeyboardButton(text=button_text, url=link_url)
+
+        if schedule_button:
+            calendar_btn = InlineKeyboardButton(text="Вывести расписание в чат",
+                                                callback_data=callback_data)
+            return _make_inline_keyboard([login_btn, calendar_btn], width=1)
+
+        return _make_inline_keyboard([login_btn], width=1)
     except Exception as e:
         logger.debug(f"Произошла ошибка в make_url_login_button {e}")
         return None
 
 
-async def make_events_meetings_as_buttons(events_data: dict):
+async def make_events_meetings_as_buttons(events_data: dict) -> Optional[InlineKeyboardMarkup]:
     try:
         buttons: list[InlineKeyboardButton] = []
 

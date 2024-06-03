@@ -32,5 +32,3 @@ async def choose_event_for_publish(message: Message):
         await message.answer(text=all_events)
     else:
         await message.answer("В данный момент нет открытых событий.")
-
-

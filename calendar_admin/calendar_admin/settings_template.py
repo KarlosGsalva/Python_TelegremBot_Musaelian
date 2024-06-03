@@ -26,7 +26,7 @@ SECRET_KEY = 'SECRET_KEY'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []  # добавить хосты
+ALLOWED_HOSTS = []  # добавить хосты + ngrok
 
 CSRF_TRUSTED_ORIGINS = []  # добавить ngrok url
 
