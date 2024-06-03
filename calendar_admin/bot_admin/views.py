@@ -30,10 +30,10 @@ def show_user_calendar(request):
 
 
 def export_events_csv(request):
-    user_id = request.GET.get('id')
-    if not user_id:
-        logger.error("Missing user_id parameter")
-        return HttpResponse(status=400, content="Missing user_id parameter")
+    user_tg_id = request.GET.get('id')
+    if not user_tg_id:
+        logger.error("Missing user_tg_id parameter")
+        return HttpResponse(status=400, content="Missing user_tg_id parameter")
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="events.csv"'
@@ -43,8 +43,8 @@ def export_events_csv(request):
         writer = csv.writer(response, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["Type", "Name", "Date", "Time", "Details", "Visibility"])
 
-        events = Event.objects.filter(user_tg_id=user_id)
-        meetings = Meeting.objects.filter(user_tg_id=user_id)
+        events = Event.objects.filter(user_tg_id=user_tg_id)
+        meetings = Meeting.objects.filter(user_tg_id=user_tg_id)
 
         for event in events:
             writer.writerow([
@@ -75,12 +75,12 @@ def export_events_csv(request):
 
 def export_events_json(request):
     try:
-        user_id = request.GET.get('id')
-        if not user_id:
-            return HttpResponse(status=400, content="Missing user_id parameter")
+        user_tg_id = request.GET.get('id')
+        if not user_tg_id:
+            return HttpResponse(status=400, content="Missing user_tg_id parameter")
 
-        events = Event.objects.filter(user_tg_id=user_id)
-        meetings = Meeting.objects.filter(user_tg_id=user_id)
+        events = Event.objects.filter(user_tg_id=user_tg_id)
+        meetings = Meeting.objects.filter(user_tg_id=user_tg_id)
 
         events_data = []
         for event in events:
