@@ -12,6 +12,11 @@ from colorlog import ColoredFormatter
 
 from calendar_bot_db.services import set_main_menu_cmds
 
+import sys
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 # ------ настройка логов ---------
 
 logging.basicConfig(level=logging.DEBUG,

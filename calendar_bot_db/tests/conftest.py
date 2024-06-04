@@ -4,7 +4,7 @@ from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from calendar_bot_db.handlers import get_routers
-from temp_tests.mocked_aiogram import MockedBot, MockedSession
+from calendar_bot_db.tests.mocked_aiogram import MockedBot, MockedSession
 
 
 @pytest.fixture(scope="session")
