@@ -17,16 +17,10 @@ class MockedSession(BaseSession):
 
     def add_result(self, response: Response[TelegramType]) -> Response[TelegramType]:
         self.responses.append(response)
-        print()
-        print(f"Added response: {response}")
-        print()
         return response
 
     def get_request(self) -> TelegramMethod[TelegramType]:
         request = self.requests.popleft()
-        print()
-        print(f"Got request: {request}")
-        print()
         return request
 
     async def close(self):
@@ -40,13 +34,8 @@ class MockedSession(BaseSession):
     ) -> TelegramType:
         self.closed = False
         self.requests.append(method)
-        print()
-        print(f"Making request: {method}")
-        print()
         response: Response[TelegramType] = self.responses.popleft()
-        print()
-        print(f"Returning response: {response}")
-        print()
+
         self.check_response(
             bot=bot,
             method=method,
