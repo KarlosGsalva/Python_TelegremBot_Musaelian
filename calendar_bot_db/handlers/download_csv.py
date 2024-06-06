@@ -24,4 +24,4 @@ async def show_all_events(message: Message):
     button_text = "Просмотреть данные в csv"
     callback_data = "show_csv"
     keyboard = await kb.make_url_link_button(button_text, json_link_url, callback_data)
-    await message.answer(WTEXT["watch_json"], reply_markup=keyboard)
+    await message.answer(WTEXT["watch_csv"], reply_markup=keyboard)

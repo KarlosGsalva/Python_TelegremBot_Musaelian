@@ -14,8 +14,15 @@ def dp() -> Dispatcher:
     return dispatcher
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def bot() -> MockedBot:
     bot = MockedBot()
     bot.session = MockedSession()
     return bot
+
+
+@pytest.fixture(scope="function", autouse=True)
+def clear_queues(bot: MockedBot):
+    yield
+    bot.session.responses.clear()
+    bot.session.requests.clear()

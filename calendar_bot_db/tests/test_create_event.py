@@ -65,11 +65,7 @@ async def test_cmd_1_create_event(dp, bot):
     outgoing_message: TelegramType = bot.get_request()
     # print(f"type outgoing_message: ", type(outgoing_message))
     # print(f"outgoing_message: ", outgoing_message.__dict__)
-    assert isinstance(outgoing_message, SendMessage)
-    assert outgoing_message.text == text_bot_query_event_name
-
-    event_name_result = await dp.feed_update(bot, Update(message=user_message_event_name, update_id=3))
-    assert event_name_result is not UNHANDLED
+    assert isinstance(outgoing_message, EditMessageReplyMarkup)
 
     outgoing_message: TelegramType = bot.get_request()
     # print(f"type outgoing_message: ", type(outgoing_message))
