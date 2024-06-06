@@ -18,7 +18,7 @@ text_bot_show_meetings_details = "Meeting:"
 
 
 @pytest.mark.asyncio
-async def test_cmd_8_registration(dp, bot):
+async def test_cmd_8_show_user_meetings_details(dp, bot):
     chat = Chat(id=1234567, type=ChatType.PRIVATE)
     user = User(id=1234567, is_bot=False, first_name="User")
 

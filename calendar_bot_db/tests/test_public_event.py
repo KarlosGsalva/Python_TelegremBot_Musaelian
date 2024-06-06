@@ -18,7 +18,7 @@ text_bot_share_event = "Выберите события для публикац�
 
 
 @pytest.mark.asyncio
-async def test_cmd_12_share_event(dp, bot):
+async def test_cmd_12_public_event(dp, bot):
     chat = Chat(id=1234567, type=ChatType.PRIVATE)
     user = User(id=1234567, is_bot=False, first_name="User")
 

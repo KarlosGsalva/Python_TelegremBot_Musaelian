@@ -19,7 +19,7 @@ text_bot_create_meeting = "Пожалуйста, введите название
 
 
 @pytest.mark.asyncio
-async def test_cmd_7_registration(dp, bot):
+async def test_cmd_7_create_meeting(dp, bot):
     chat = Chat(id=1234567, type=ChatType.PRIVATE)
     user = User(id=1234567, is_bot=False, first_name="User")
 

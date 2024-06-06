@@ -18,7 +18,7 @@ text_bot_show_meetings_details = "Выберите встречу для уда�
 
 
 @pytest.mark.asyncio
-async def test_cmd_9_registration(dp, bot):
+async def test_cmd_9_delete_meeting(dp, bot):
     chat = Chat(id=1234567, type=ChatType.PRIVATE)
     user = User(id=1234567, is_bot=False, first_name="User")
 
