@@ -3,13 +3,10 @@ from aiogram_dialog import Dialog, setup_dialogs
 from calendar_bot_db.handlers.dialog_choose_dates import (set_calendar_window_for_event,
                                                           edit_event_date_calendar_window,
                                                           set_calendar_window_for_meeting)
-from calendar_bot_db.handlers import (start_cmds, show_event, show_events,
-                                      register, create_event, edit_event,
-                                      delete_event, cancel, end_cap,
-                                      create_meeting, accept_decline, show_user_meetings,
-                                      show_my_calendar, delete_meeting, share_event,
-                                      publish_events, show_published_events, download_json,
-                                      download_csv)
+from calendar_bot_db.handlers import (create_event, cancel, accept_decline, register, show_published_events,
+                                      show_my_calendar, start_cmds, delete_meeting, download_json, show_event,
+                                      delete_event, create_meeting, edit_event, end_cap, show_events, publish_events,
+                                      download_csv, show_user_meetings, share_event)
 
 
 def get_routers(dp: Dispatcher) -> list[Router]:

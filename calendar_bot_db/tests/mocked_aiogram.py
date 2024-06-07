@@ -54,6 +54,10 @@ class MockedSession(BaseSession):
     ) -> AsyncGenerator[bytes, None]:  # pragme: no cover
         yield b""
 
+    def clear_queues(self):
+        self.responses.clear()
+        self.requests.clear()
+
 
 class MockedBot(Bot):
     if TYPE_CHECKING:
@@ -97,4 +101,7 @@ class MockedBot(Bot):
 
     def get_request(self) -> TelegramMethod[TelegramType]:
         return self.session.get_request()
+
+    def clear_queues(self):
+        self.session.clear_queues()
 

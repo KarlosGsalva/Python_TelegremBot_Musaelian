@@ -6,6 +6,7 @@ import sys
 
 from aiogram.dispatcher.event.bases import UNHANDLED
 from aiogram.enums import ChatType
+from aiogram.fsm.context import FSMContext
 from aiogram.methods import SendMessage, EditMessageReplyMarkup
 from aiogram.methods.base import TelegramType
 from aiogram.types import Update, Chat, User, Message, CallbackQuery
@@ -14,14 +15,19 @@ from aiogram.types import Update, Chat, User, Message, CallbackQuery
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
+user_id = 123415
+chat_id = 123415
 text_incoming_user_6_cmd = "/6"
 text_bot_registration = "Введите Ваше имя пользователя:"
 
 
 @pytest.mark.asyncio
 async def test_cmd_6_registration(dp, bot):
-    chat = Chat(id=1234567, type=ChatType.PRIVATE)
-    user = User(id=1234567, is_bot=False, first_name="User")
+    chat = Chat(id=chat_id, type=ChatType.PRIVATE)
+    user = User(id=user_id, is_bot=False, first_name="User")
+
+    fsm_context: FSMContext = dp.fsm.get_context(bot=bot, user_id=user_id, chat_id=chat_id)
+    await fsm_context.clear()
 
     bot.add_result_for(
         method=SendMessage,
@@ -29,7 +35,7 @@ async def test_cmd_6_registration(dp, bot):
         result=Message(
             message_id=11,
             date=datetime.now(),
-            chat=Chat(id=1234567, type=ChatType.PRIVATE),
+            chat=Chat(id=chat_id, type=ChatType.PRIVATE),
             text=text_bot_registration,
         ),
     )

@@ -5,6 +5,7 @@ import sys
 
 from aiogram.dispatcher.event.bases import UNHANDLED
 from aiogram.enums import ChatType
+from aiogram.fsm.context import FSMContext
 from aiogram.methods import SendMessage, EditMessageReplyMarkup
 from aiogram.methods.base import TelegramType
 from aiogram.types import Update, Chat, User, Message, CallbackQuery
@@ -13,14 +14,18 @@ from aiogram.types import Update, Chat, User, Message, CallbackQuery
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
+user_id = 123411
+chat_id = 123411
 text_incoming_user_9_cmd = "/9"
 text_bot_show_meetings_details = "Выберите встречу для удаления:"
 
 
 @pytest.mark.asyncio
 async def test_cmd_9_delete_meeting(dp, bot):
-    chat = Chat(id=1234567, type=ChatType.PRIVATE)
-    user = User(id=1234567, is_bot=False, first_name="User")
+    chat = Chat(id=chat_id, type=ChatType.PRIVATE)
+    user = User(id=user_id, is_bot=False, first_name="User")
+    fsm_context: FSMContext = dp.fsm.get_context(bot=bot, user_id=user_id, chat_id=chat_id)
+    await fsm_context.clear()
 
     bot.add_result_for(
         method=SendMessage,
@@ -28,7 +33,7 @@ async def test_cmd_9_delete_meeting(dp, bot):
         result=Message(
             message_id=17,
             date=datetime.now(),
-            chat=Chat(id=1234567, type=ChatType.PRIVATE),
+            chat=Chat(id=chat_id, type=ChatType.PRIVATE),
             text=text_bot_show_meetings_details,
         ),
     )
@@ -45,5 +50,6 @@ async def test_cmd_9_delete_meeting(dp, bot):
     outgoing_message: TelegramType = bot.get_request()
     print(f"type outgoing_message: ", type(outgoing_message))
     print(f"outgoing_message: ", outgoing_message.__dict__)
+    print("outgoing_message_text:", outgoing_message.text)
     assert isinstance(outgoing_message, SendMessage)
     assert outgoing_message.text == text_bot_show_meetings_details
