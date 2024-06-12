@@ -6,18 +6,22 @@ KarlosGsalva
 
 karlenmusaelian@gmail.com
 
-docker-compose -f docker-compose.yml up --build
+`docker-compose -f docker-compose.yml up --build`
 
 Требуется перенастроить:
 
-.example_env -> .env
+`.example_env -> .env`
 
-settings_template.py -> settings.py
+`settings_template.py -> settings.py`
 
 Команда для запуска тестов бота:
 
-docker-compose -f docker-compose.yml run bot pytest -s -vv
+`docker-compose -f docker-compose.yml run bot pytest -s -vv`
 
 Команда для запуска тестов api:
 
-docker-compose -f docker-compose.yml run django_admin pytest -s -vv
+`docker-compose -f docker-compose.yml run django_admin pytest -s -vv`
+
+Для корректного формирования адреса теста api - прописать соответствующий 
+
+в БД `user_id` в файл `Python_TelegremBot_Musaelian\calendar_admin\tests`

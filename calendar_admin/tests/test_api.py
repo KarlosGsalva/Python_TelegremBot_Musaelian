@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 NGROK_URL = os.getenv("NGROK_URL")
-user_id = 6594296991
+user_id = 6594296991  # ввести проверяемый id имеющийся в базе
 
 
 def test_accessibility_api():
