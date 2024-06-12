@@ -1,7 +1,6 @@
 import logging
 
-from aiogram import Router, F
-from aiogram_dialog import DialogManager, Dialog, setup_dialogs
+from aiogram import Router
 from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
@@ -9,7 +8,7 @@ from aiogram.types import Message, CallbackQuery
 
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 from calendar_bot_db.models import crud_events as db
-from calendar_bot_db.states import FSMCreateEvent, FSMMenuOptions
+from calendar_bot_db.states import FSMMenuOptions
 
 import calendar_bot_db.keyboards as kb
 
@@ -24,8 +23,7 @@ router = Router(name="show_event_detail_router")
 async def show_event(message: Message, state: FSMContext):
     # Выбираем событие инлайн кнопкой
     keyboard = await kb.make_events_as_buttons(message.from_user.id)
-    await message.answer(text=WTEXT["request_event_for_show"],
-                         reply_markup=keyboard)
+    await message.answer(text=WTEXT["request_event_for_show"], reply_markup=keyboard)
     # Переводимся в состояние чтения заметки
     await state.set_state(FSMMenuOptions.read_event)
 

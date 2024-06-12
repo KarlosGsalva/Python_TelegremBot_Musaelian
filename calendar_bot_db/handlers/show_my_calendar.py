@@ -24,8 +24,9 @@ async def show_all_events(message: Message):
     button_text = "Мой календарь"
     callback_data = "show_calendar"
 
-    keyboard = await kb.make_url_link_button(button_text, calendar_url, callback_data,
-                                             schedule_button=True)
+    keyboard = await kb.make_url_link_button(
+        button_text, calendar_url, callback_data, schedule_button=True
+    )
     await message.answer(WTEXT["calendar"], reply_markup=keyboard)
 
 

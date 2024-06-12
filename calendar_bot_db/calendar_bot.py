@@ -19,22 +19,25 @@ if sys.platform == "win32":
 
 # ------ настройка логов ---------
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 color_formatter = ColoredFormatter(
     "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s%(reset)s",
-    datefmt='%Y-%m-%d %H:%M:%S',
+    datefmt="%Y-%m-%d %H:%M:%S",
     reset=True,
     log_colors={
-        'DEBUG': 'yellow',
-        'INFO': 'green',
-        'WARNING': 'cyan',
-        'ERROR': 'red',
-        'CRITICAL': 'red,bg_white',
+        "DEBUG": "yellow",
+        "INFO": "green",
+        "WARNING": "cyan",
+        "ERROR": "red",
+        "CRITICAL": "red,bg_white",
     },
-    secondary_log_colors={})
+    secondary_log_colors={},
+)
 
 for handler in logging.root.handlers:
     handler.setFormatter(color_formatter)
@@ -63,7 +66,7 @@ async def main():
     await dp.start_polling(bot)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:

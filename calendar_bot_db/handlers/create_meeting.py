@@ -31,19 +31,25 @@ async def create_meeting(message: Message, state: FSMContext):
 
 
 @router.message(StateFilter(FSMCreateMeeting.fill_meeting_name))
-async def get_meeting_name(message: Message, state: FSMContext, dialog_manager: DialogManager):
+async def get_meeting_name(
+    message: Message, state: FSMContext, dialog_manager: DialogManager
+):
     await state.update_data(user_tg_id=message.from_user.id)
     await state.update_data(meeting_name=message.text)
     await dialog_manager.start(FSMCreateMeeting.fill_meeting_date)
 
 
-@router.callback_query(F.data.startswith("time"), StateFilter(FSMCreateMeeting.fill_meeting_time))
+@router.callback_query(
+    F.data.startswith("time"), StateFilter(FSMCreateMeeting.fill_meeting_time)
+)
 async def set_meeting_time(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     meeting_time = callback.data[5:]
     await callback.message.answer(f"Вы выбрали {meeting_time} временем встречи.")
     await state.update_data(meeting_time=meeting_time)
-    await callback.message.answer(WTEXT["request_meeting_duration"], reply_markup=kb.cancel_markup)
+    await callback.message.answer(
+        WTEXT["request_meeting_duration"], reply_markup=kb.cancel_markup
+    )
     await state.set_state(FSMCreateMeeting.fill_meeting_duration)
 
 
@@ -57,15 +63,21 @@ async def set_meeting_duration(message: Message, state: FSMContext):
 
         keyboard = await kb.make_users_as_buttons(message.from_user.id)
 
-        await message.answer(WTEXT["request_meeting_participants"], reply_markup=keyboard)
+        await message.answer(
+            WTEXT["request_meeting_participants"], reply_markup=keyboard
+        )
         await state.set_state(FSMCreateMeeting.fill_meeting_participants)
     else:
         await message.answer(WTEXT["duration_warning"])
-        await message.answer(WTEXT["request_meeting_details"], reply_markup=kb.cancel_markup)
+        await message.answer(
+            WTEXT["request_meeting_details"], reply_markup=kb.cancel_markup
+        )
 
 
-@router.callback_query(F.data != "participants_selected",
-                       StateFilter(FSMCreateMeeting.fill_meeting_participants))
+@router.callback_query(
+    F.data != "participants_selected",
+    StateFilter(FSMCreateMeeting.fill_meeting_participants),
+)
 async def get_participants(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     participants = data["participants"]
@@ -78,12 +90,15 @@ async def get_participants(callback: CallbackQuery, state: FSMContext):
         meeting_time = dt.strptime(data.get("meeting_time"), "%H:%M").time()
         meeting_duration = timedelta(minutes=int(data.get("duration")))
 
-        is_busy = await dbm.is_user_available(connection, user_id, meeting_date,
-                                              meeting_time, meeting_duration)
+        is_busy = await dbm.is_user_available(
+            connection, user_id, meeting_date, meeting_time, meeting_duration
+        )
 
     if is_busy:
-        await callback.answer("У выбранного пользователя уже назначена встреча на это время",
-                              show_alert=True)
+        await callback.answer(
+            "У выбранного пользователя уже назначена встреча на это время",
+            show_alert=True,
+        )
     else:
         if user_id in participants:
             participants.remove(user_id)
@@ -98,7 +113,9 @@ async def get_participants(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "participants_selected")
 async def get_meeting_details(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
-    await callback.message.answer(WTEXT["request_meeting_details"], reply_markup=kb.cancel_markup)
+    await callback.message.answer(
+        WTEXT["request_meeting_details"], reply_markup=kb.cancel_markup
+    )
     await state.set_state(FSMCreateMeeting.fill_meeting_details)
 
 
@@ -118,22 +135,29 @@ async def write_event_details(message: Message, state: FSMContext):
 
     # Записываем в БД и получаем meeting_id
     meeting_id = await dbm.write_meeting_in_db(
-        user_tg_id, meeting_name, meeting_date, meeting_time,
-        meeting_duration, meeting_details, meeting_participants
+        user_tg_id,
+        meeting_name,
+        meeting_date,
+        meeting_time,
+        meeting_duration,
+        meeting_details,
+        meeting_participants,
     )
 
     # Отправляем приглашения
-    text_for_send = (f"Вы приглашены на событие: {meeting_name}\n"
-                     f"День проведения: {meeting_date}\n"
-                     f"Время начала встречи: {meeting_time}\n"
-                     f"Встреча займет: {meeting_duration} минут.\n"
-                     f"Пожалуйста, подтвердите или отклоните приглашение.")
+    text_for_send = (
+        f"Вы приглашены на событие: {meeting_name}\n"
+        f"День проведения: {meeting_date}\n"
+        f"Время начала встречи: {meeting_time}\n"
+        f"Встреча займет: {meeting_duration} минут.\n"
+        f"Пожалуйста, подтвердите или отклоните приглашение."
+    )
 
     for participant in meeting_participants:
         keyboard = await kb.accept_decline_meeting_buttons(participant, meeting_id)
-        await message.bot.send_message(chat_id=participant,
-                                       text=text_for_send,
-                                       reply_markup=keyboard)
+        await message.bot.send_message(
+            chat_id=participant, text=text_for_send, reply_markup=keyboard
+        )
 
     await db.update_statistics(meeting_count=True)
     await message.answer(WTEXT["meeting_made"])

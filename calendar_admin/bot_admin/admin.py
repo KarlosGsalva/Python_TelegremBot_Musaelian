@@ -1,6 +1,12 @@
 from django.contrib import admin
-from .models import (User, Event, BotStatistics, Meeting,
-                     MeetingParticipant, MeetingAdmin)
+from .models import (
+    User,
+    Event,
+    BotStatistics,
+    Meeting,
+    MeetingParticipant,
+    MeetingAdmin,
+)
 
 
 admin.site.register(MeetingParticipant)

@@ -1,22 +1,22 @@
-import json
 import logging
 
 from aiogram import Router, F
-from aiogram_dialog import DialogManager
+
 from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
 
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
-from calendar_bot_db.models import crud_events as db
-from calendar_bot_db.models.crud_events import gather_user_or_events_db
-from calendar_bot_db.models.crud_meetings import get_calendar_events, change_events_visibility
+
+from calendar_bot_db.models.crud_meetings import (
+    get_calendar_events,
+    change_events_visibility,
+)
 from calendar_bot_db.states import FSMMenuOptions
 
 import calendar_bot_db.keyboards as kb
 
-from calendar_bot_db.services import split_callback_to_name_id, convert_str_to_time
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,9 @@ async def choose_event_for_publish(message: Message, state: FSMContext):
     await state.set_state(FSMMenuOptions.publish_event)
 
 
-@router.callback_query(F.data != "events_selected", StateFilter(FSMMenuOptions.publish_event))
+@router.callback_query(
+    F.data != "events_selected", StateFilter(FSMMenuOptions.publish_event)
+)
 async def choose_event_point_for_edit(callback: CallbackQuery, state: FSMContext):
     storage_data: dict = await state.get_data()
     all_events = storage_data["all_events"]
@@ -54,24 +56,27 @@ async def choose_event_point_for_edit(callback: CallbackQuery, state: FSMContext
             events_to_publish.append(choosen_event_name)
 
         await state.update_data(events_to_publish=events_to_publish)
-        keyboard = await kb.make_events_as_choosen_buttons(events_to_publish=events_to_publish,
-                                                           all_events=all_events)
+        keyboard = await kb.make_events_as_choosen_buttons(
+            events_to_publish=events_to_publish, all_events=all_events
+        )
         await callback.message.edit_reply_markup(reply_markup=keyboard)
     else:
         await callback.message.answer("У вас нет доступных событий для публикации.")
 
 
-@router.callback_query(F.data == "events_selected", StateFilter(FSMMenuOptions.publish_event))
+@router.callback_query(
+    F.data == "events_selected", StateFilter(FSMMenuOptions.publish_event)
+)
 async def change_event_name(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # Подтверждаем получение callback
 
     choosen_event_data = await state.get_data()
     events_to_publish = choosen_event_data["events_to_publish"]
 
-    await change_events_visibility(callback.from_user.id, events_to_publish, publish=True)
+    await change_events_visibility(
+        callback.from_user.id, events_to_publish, publish=True
+    )
     await callback.message.delete_reply_markup()
     await callback.message.delete()
     await callback.message.answer(text=WTEXT["events_published"])
     await state.clear()
-
-

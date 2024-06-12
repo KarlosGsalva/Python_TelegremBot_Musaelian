@@ -7,9 +7,9 @@ import sys
 from aiogram.dispatcher.event.bases import UNHANDLED
 from aiogram.enums import ChatType
 from aiogram.fsm.context import FSMContext
-from aiogram.methods import SendMessage, EditMessageReplyMarkup
+from aiogram.methods import SendMessage
 from aiogram.methods.base import TelegramType
-from aiogram.types import Update, Chat, User, Message, CallbackQuery
+from aiogram.types import Update, Chat, User, Message
 
 from calendar_bot_db.states import FSMCreateEvent
 
@@ -30,7 +30,9 @@ async def test_cmd_1_create_event(dp, bot):
     chat = Chat(id=chat_id, type=ChatType.PRIVATE)
     user = User(id=user_id, is_bot=False, first_name="User")
 
-    fsm_context: FSMContext = dp.fsm.get_context(bot=bot, user_id=user_id, chat_id=chat_id)
+    fsm_context: FSMContext = dp.fsm.get_context(
+        bot=bot, user_id=user_id, chat_id=chat_id
+    )
     await fsm_context.clear()
 
     bot.add_result_for(
@@ -55,20 +57,25 @@ async def test_cmd_1_create_event(dp, bot):
         ),
     )
 
-    user_message_cmd_1 = Message(message_id=4,
-                                 date=datetime.now(),
-                                 chat=chat,
-                                 from_user=user,
-                                 text=text_incoming_user_1_cmd)
+    user_message_cmd_1 = Message(
+        message_id=4,
+        date=datetime.now(),
+        chat=chat,
+        from_user=user,
+        text=text_incoming_user_1_cmd,
+    )
 
-    user_message_event_name = Message(message_id=5,
-                                      date=datetime.now(),
-                                      chat=chat,
-                                      from_user=user,
-                                      text=text_incoming_user_event_name)
+    user_message_event_name = Message(
+        message_id=5,
+        date=datetime.now(),
+        chat=chat,
+        from_user=user,
+        text=text_incoming_user_event_name,
+    )
 
-
-    cmd_1_result = await dp.feed_update(bot, Update(message=user_message_cmd_1, update_id=2))
+    cmd_1_result = await dp.feed_update(
+        bot, Update(message=user_message_cmd_1, update_id=2)
+    )
     assert cmd_1_result is not UNHANDLED
 
     outgoing_message: TelegramType = bot.get_request()
@@ -80,7 +87,9 @@ async def test_cmd_1_create_event(dp, bot):
     assert isinstance(outgoing_message, SendMessage)
     assert current_state == FSMCreateEvent.fill_event_name
 
-    cmd_event_name = await dp.feed_update(bot, Update(message=user_message_event_name, update_id=3))
+    cmd_event_name = await dp.feed_update(
+        bot, Update(message=user_message_event_name, update_id=3)
+    )
     assert cmd_event_name is not UNHANDLED
 
     outgoing_message: TelegramType = bot.get_request()

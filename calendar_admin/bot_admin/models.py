@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db import models
-from django.utils import timezone
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -24,16 +24,16 @@ class Event(models.Model):
         PUBLISHED = "PB", "Published"
         PRIVATE = "PR", "Private"
 
-    user_tg_id = models.ForeignKey(User,
-                                   to_field="user_tg_id", db_column="user_tg_id",
-                                   on_delete=models.CASCADE)
+    user_tg_id = models.ForeignKey(
+        User, to_field="user_tg_id", db_column="user_tg_id", on_delete=models.CASCADE
+    )
     event_name = models.CharField(max_length=100, unique=True)
     event_date = models.DateField()
     event_time = models.TimeField()
     event_details = models.TextField()
-    visibility = models.CharField(max_length=2,
-                                  choices=VisibilityStatus.choices,
-                                  default=VisibilityStatus.PRIVATE)
+    visibility = models.CharField(
+        max_length=2, choices=VisibilityStatus.choices, default=VisibilityStatus.PRIVATE
+    )
 
     class Meta:
         db_table = "events"
@@ -65,13 +65,17 @@ class Meeting(models.Model):
         PUBLISHED = "PB", "Published"
         PRIVATE = "PR", "Private"
 
-    user_tg_id = models.ForeignKey(User,
-                                   to_field="user_tg_id",
-                                   db_column="user_tg_id",
-                                   on_delete=models.CASCADE,
-                                   related_name="organizer",
-                                   default=1)
-    participants = models.ManyToManyField(User, related_name="meetings", through="MeetingParticipant")
+    user_tg_id = models.ForeignKey(
+        User,
+        to_field="user_tg_id",
+        db_column="user_tg_id",
+        on_delete=models.CASCADE,
+        related_name="organizer",
+        default=1,
+    )
+    participants = models.ManyToManyField(
+        User, related_name="meetings", through="MeetingParticipant"
+    )
     event = models.ForeignKey(Event, on_delete=models.CASCADE, null=True, blank=True)
     meeting_name = models.CharField(null=True)
     date = models.DateField()
@@ -79,9 +83,9 @@ class Meeting(models.Model):
     duration = models.DurationField(default="00:15:00")
     end_time = models.TimeField(null=True, blank=True)
     details = models.TextField(null=True, blank=True)
-    visibility = models.CharField(max_length=2,
-                                  choices=VisibilityStatus.choices,
-                                  default=VisibilityStatus.PRIVATE)
+    visibility = models.CharField(
+        max_length=2, choices=VisibilityStatus.choices, default=VisibilityStatus.PRIVATE
+    )
 
     class Meta:
         db_table = "meetings"
@@ -98,18 +102,17 @@ class MeetingParticipant(models.Model):
         CANCELED = "CL", "Canceled"
         PENDING = "PD", "Pending"
 
-    meeting = models.ForeignKey('Meeting', on_delete=models.CASCADE)
-    user = models.ForeignKey(User,
-                             to_field='user_tg_id',
-                             db_column='user_tg_id',
-                             on_delete=models.CASCADE)
-    status = models.CharField(max_length=2,
-                              choices=MeetingStatus.choices,
-                              default=MeetingStatus.PENDING)
+    meeting = models.ForeignKey("Meeting", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, to_field="user_tg_id", db_column="user_tg_id", on_delete=models.CASCADE
+    )
+    status = models.CharField(
+        max_length=2, choices=MeetingStatus.choices, default=MeetingStatus.PENDING
+    )
 
     class Meta:
         db_table = "meeting_participants"
-        unique_together = ('meeting', 'user')
+        unique_together = ("meeting", "user")
 
 
 class MeetingParticipantInline(admin.TabularInline):
@@ -117,10 +120,10 @@ class MeetingParticipantInline(admin.TabularInline):
     extra = 1
     can_delete = True
     show_change_link = True
-    readonly_fields = ('user', 'status')
-    fields = ('user', 'status')
+    readonly_fields = ("user", "status")
+    fields = ("user", "status")
 
 
 class MeetingAdmin(admin.ModelAdmin):
-    list_display = ('meeting_name', 'date', 'time', 'duration', 'end_time', 'details')
+    list_display = ("meeting_name", "date", "time", "duration", "end_time", "details")
     inlines = [MeetingParticipantInline]

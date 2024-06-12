@@ -13,7 +13,7 @@ from calendar_bot_db.states import FSMMenuOptions
 
 import calendar_bot_db.keyboards as kb
 
-from calendar_bot_db.services import split_callback_to_name_id, convert_str_to_time
+from calendar_bot_db.services import split_callback_to_name_id
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +24,9 @@ router = Router(name="delete_meeting_router")
 @router.message(Command(commands=["9"]), StateFilter(default_state))
 async def request_meeting_for_delete(message: Message, state: FSMContext):
     keyboard = await kb.make_meetings_as_buttons(message.from_user.id)
-    await message.answer(text=WTEXT["request_meeting_for_delete"],
-                         reply_markup=keyboard)
+    await message.answer(
+        text=WTEXT["request_meeting_for_delete"], reply_markup=keyboard
+    )
     await state.set_state(FSMMenuOptions.delete_meeting)
 
 

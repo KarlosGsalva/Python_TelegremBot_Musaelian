@@ -1,15 +1,14 @@
 import logging
 
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.filters import StateFilter, Command
 from aiogram.fsm.state import default_state
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 from calendar_bot_db.models.config import settings
 
 import calendar_bot_db.keyboards as kb
-from calendar_bot_db.models.crud_meetings import get_calendar_events
 
 logger = logging.getLogger(__name__)
 

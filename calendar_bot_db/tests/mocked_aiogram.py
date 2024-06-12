@@ -104,4 +104,3 @@ class MockedBot(Bot):
 
     def clear_queues(self):
         self.session.clear_queues()
-

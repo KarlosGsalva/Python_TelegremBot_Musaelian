@@ -9,7 +9,6 @@ from aiogram.types import Message
 from calendar_bot_db.models import crud_events as db
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 
-import calendar_bot_db.keyboards as kb
 from calendar_bot_db.states import FSMRegistryUser
 
 logger = logging.getLogger(__name__)
@@ -40,9 +39,11 @@ async def get_email(message: Message, state: FSMContext):
 @router.message(StateFilter(FSMRegistryUser.fill_password))
 async def save_user_data(message: Message, state: FSMContext):
     user_data = await state.get_data()
-    await db.save_registry_user_data(user_tg_id=message.from_user.id,
-                                     username=user_data["username"],
-                                     user_email=user_data["email"],
-                                     user_password=message.text)
+    await db.save_registry_user_data(
+        user_tg_id=message.from_user.id,
+        username=user_data["username"],
+        user_email=user_data["email"],
+        user_password=message.text,
+    )
     await message.answer(WTEXT["data_saved"])
     await state.clear()

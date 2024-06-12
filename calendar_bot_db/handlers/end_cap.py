@@ -1,12 +1,10 @@
 import logging
 
-from aiogram import Router, F
-from aiogram.filters import CommandStart, StateFilter, Command
-from aiogram.fsm.context import FSMContext
+from aiogram import Router
+from aiogram.filters import StateFilter
 from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
 
-from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
 
 logger = logging.getLogger(__name__)
 

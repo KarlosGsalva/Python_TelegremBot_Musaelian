@@ -23,8 +23,7 @@ router = Router(name="edit_event_router")
 @router.message(Command(commands=["3"]), StateFilter(default_state))
 async def choose_event_for_edit(message: Message, state: FSMContext):
     keyboard = await kb.make_events_as_buttons(message.from_user.id)
-    await message.answer(text=WTEXT["request_event_for_edit"],
-                         reply_markup=keyboard)
+    await message.answer(text=WTEXT["request_event_for_edit"], reply_markup=keyboard)
     await state.set_state(FSMEditEvent.choose_event)
 
 
@@ -33,13 +32,17 @@ async def choose_event_point_for_edit(callback: CallbackQuery, state: FSMContext
     event_id: int = split_callback_to_name_id(callback.data)["id"]
     user_tg_id: int = callback.from_user.id
     await state.update_data(event_id=event_id, user_tg_id=user_tg_id)
-    await callback.message.answer(text=WTEXT["request_event_point_for_edit"],
-                                  reply_markup=kb.make_event_points_as_buttons())
+    await callback.message.answer(
+        text=WTEXT["request_event_point_for_edit"],
+        reply_markup=kb.make_event_points_as_buttons(),
+    )
     await callback.answer()
     await state.set_state(FSMEditEvent.choose_event_point)
 
 
-@router.callback_query(F.data == "change_event_name", StateFilter(FSMEditEvent.choose_event_point))
+@router.callback_query(
+    F.data == "change_event_name", StateFilter(FSMEditEvent.choose_event_point)
+)
 async def change_event_name(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # Подтверждаем получение callback
     await callback.message.answer(text=WTEXT["request_new_event_name"])
@@ -52,8 +55,9 @@ async def edit_event_name(message: Message, state: FSMContext):
     user_data = await state.get_data()
 
     # Изменяем событие
-    await db.change_event(user_data["user_tg_id"], user_data["event_id"],
-                          new_event_name=new_event_name)
+    await db.change_event(
+        user_data["user_tg_id"], user_data["event_id"], new_event_name=new_event_name
+    )
 
     # Добавляем в статистику
     await db.update_statistics(edited_events=True)
@@ -61,23 +65,31 @@ async def edit_event_name(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.callback_query(F.data == "change_event_date", StateFilter(FSMEditEvent.choose_event_point))
-async def get_new_event_date(callback: CallbackQuery, state: FSMContext,
-                             dialog_manager: DialogManager):
+@router.callback_query(
+    F.data == "change_event_date", StateFilter(FSMEditEvent.choose_event_point)
+)
+async def get_new_event_date(
+    callback: CallbackQuery, state: FSMContext, dialog_manager: DialogManager
+):
     await callback.answer()  # Подтверждаем получение callback
     await dialog_manager.start(FSMEditEvent.edit_event_date)
 
 
-@router.callback_query(F.data == "change_event_time", StateFilter(FSMEditEvent.choose_event_point))
+@router.callback_query(
+    F.data == "change_event_time", StateFilter(FSMEditEvent.choose_event_point)
+)
 async def get_new_event_time(callback: CallbackQuery, state: FSMContext):
     keyboard = kb.time_keyboard()
     await callback.answer()  # Подтверждаем получение callback
-    await callback.message.answer(text=WTEXT["request_new_event_time"],
-                                  reply_markup=keyboard)
+    await callback.message.answer(
+        text=WTEXT["request_new_event_time"], reply_markup=keyboard
+    )
     await state.set_state(FSMEditEvent.edit_event_time)
 
 
-@router.callback_query(F.data.startswith("time"), StateFilter(FSMEditEvent.edit_event_time))
+@router.callback_query(
+    F.data.startswith("time"), StateFilter(FSMEditEvent.edit_event_time)
+)
 async def edit_event_time(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # подтверждаем получение callback с time
     # сохраняем время в datetime.time
@@ -87,8 +99,9 @@ async def edit_event_time(callback: CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
 
     # Изменяем событие
-    await db.change_event(user_data["user_tg_id"], user_data["event_id"],
-                          new_event_time=new_event_time)
+    await db.change_event(
+        user_data["user_tg_id"], user_data["event_id"], new_event_time=new_event_time
+    )
 
     # Добавляем в статистику
     await db.update_statistics(edited_events=True)
@@ -100,7 +113,9 @@ async def edit_event_time(callback: CallbackQuery, state: FSMContext):
 
 
 # Хэндлер 3 пункта меню, изменить описание события
-@router.callback_query(F.data == "change_event_details", StateFilter(FSMEditEvent.choose_event_point))
+@router.callback_query(
+    F.data == "change_event_details", StateFilter(FSMEditEvent.choose_event_point)
+)
 async def request_new_event_details(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # подтверждаем получение callback с выбором опции
     await callback.message.answer(WTEXT["request_new_event_details"])
@@ -117,8 +132,11 @@ async def set_new_event_details(message: Message, state: FSMContext):
     user_data = await state.get_data()
 
     # Изменяем событие
-    await db.change_event(user_data["user_tg_id"], user_data["event_id"],
-                          new_event_details=new_event_details)
+    await db.change_event(
+        user_data["user_tg_id"],
+        user_data["event_id"],
+        new_event_details=new_event_details,
+    )
 
     # Добавляем в статистику
     await db.update_statistics(edited_events=True)

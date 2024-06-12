@@ -1,7 +1,7 @@
 import logging
 
 from aiogram import Router, F
-from aiogram.filters import CommandStart, StateFilter, Command
+from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
@@ -32,4 +32,3 @@ async def process_cancel_command(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(text=WTEXT["exit"])
     await callback.answer()
     await state.clear()
-

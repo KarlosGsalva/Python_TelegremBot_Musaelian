@@ -1,7 +1,7 @@
 import logging
 
 from aiogram import Router, F
-from aiogram_dialog import DialogManager, Dialog, setup_dialogs
+from aiogram_dialog import DialogManager
 from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
@@ -24,15 +24,15 @@ router = Router(name="create_event_router")
 @router.message(Command(commands=["1"]), StateFilter(default_state))
 async def create_event(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer(WTEXT["request_event_name"],
-                         reply_markup=kb.cancel_markup)
+    await message.answer(WTEXT["request_event_name"], reply_markup=kb.cancel_markup)
     await state.set_state(FSMCreateEvent.fill_event_name)
 
 
 # Забираем название события, переключаемся на введение даты
 @router.message(StateFilter(FSMCreateEvent.fill_event_name))
-async def process_event_name(message: Message, state: FSMContext,
-                             dialog_manager: DialogManager):
+async def process_event_name(
+    message: Message, state: FSMContext, dialog_manager: DialogManager
+):
     await state.update_data(user_tg_id=message.from_user.id)
     await state.update_data(event_name=message.text)
     # отправляем календарь
@@ -40,7 +40,9 @@ async def process_event_name(message: Message, state: FSMContext,
 
 
 # Забираем дату события, переключаемся на введение details
-@router.callback_query(F.data.startswith("time"), StateFilter(FSMCreateEvent.fill_event_time))
+@router.callback_query(
+    F.data.startswith("time"), StateFilter(FSMCreateEvent.fill_event_time)
+)
 async def process_event_date(callback: CallbackQuery, state: FSMContext):
     await callback.answer()  # подтверждаем получение callback с time
     event_time = callback.data[5:]
@@ -64,7 +66,9 @@ async def write_event_details(message: Message, state: FSMContext):
     event_details = event_data["details"]
 
     # Записываем в БД
-    await db.write_event_in_db(user_tg_id, event_name, event_date, event_time, event_details)
+    await db.write_event_in_db(
+        user_tg_id, event_name, event_date, event_time, event_details
+    )
     await db.update_statistics(event_count=True)
     await message.answer(WTEXT["event_made"])
     await state.clear()

@@ -19,5 +19,4 @@ router = Router(name="show_events_router")
 @router.message(Command(commands=["5"]), StateFilter(default_state))
 async def show_all_events(message: Message):
     keyboard = await kb.make_events_as_buttons(message.from_user.id)
-    await message.answer(WTEXT["show_all_events"],
-                         reply_markup=keyboard)
+    await message.answer(WTEXT["show_all_events"], reply_markup=keyboard)

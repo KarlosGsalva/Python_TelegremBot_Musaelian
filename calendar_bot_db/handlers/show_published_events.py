@@ -1,22 +1,16 @@
-import json
 import logging
 
-from aiogram import Router, F
-from aiogram_dialog import DialogManager
+from aiogram import Router
 from aiogram.filters import StateFilter, Command
-from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 
 from calendar_bot_db.lexicon import WARNING_TEXTS as WTEXT
-from calendar_bot_db.models import crud_events as db
-from calendar_bot_db.models.crud_events import gather_user_or_events_db
-from calendar_bot_db.models.crud_meetings import get_calendar_events, change_events_visibility
-from calendar_bot_db.states import FSMMenuOptions
 
-import calendar_bot_db.keyboards as kb
+from calendar_bot_db.models.crud_meetings import (
+    get_calendar_events,
+)
 
-from calendar_bot_db.services import split_callback_to_name_id, convert_str_to_time
 
 logger = logging.getLogger(__name__)
 
