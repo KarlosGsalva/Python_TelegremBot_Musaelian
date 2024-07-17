@@ -1,0 +1,68 @@
+services:
+  bot:
+    env_file:
+      - ./.env
+    build: &build
+      context: ./
+    restart: always
+    environment: &project_env
+      - BOT_TOKEN
+      - DB_URL
+      - DB_HOST
+      - DB_USER
+      - DB_PASS
+      - DB_NAME
+      - PYTHONPATH=/app
+      - ALEMBIC_CONFIG=/app/alembic.ini
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    working_dir: /app/calendar_bot_db
+    ports:
+      - "8080:8080"
+    command: ["python", "calendar_bot.py"]
+
+  django_admin:
+    build: *build
+    restart: always
+    environment: *project_env
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    working_dir: /app/calendar_admin/
+    ports:
+      - "8000:8000"
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+  db:
+    image: postgres:12-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - db_meet_bot:/var/lib/postgresql/data
+    ports:
+      - "5438:5432"
+
+  migrate:
+    build: *build
+    restart: "no"
+    environment: *project_env
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: ["alembic", "upgrade", "head"]
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  db_meet_bot: { }
