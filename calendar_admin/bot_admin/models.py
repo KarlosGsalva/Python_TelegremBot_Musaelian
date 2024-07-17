@@ -9,8 +9,10 @@ logger = logging.getLogger(__name__)
 class User(models.Model):
     user_tg_id = models.BigIntegerField(unique=True)
     username = models.CharField(max_length=40, null=True)
-    email = models.CharField(max_length=40, null=True)
+    email = models.EmailField(max_length=40, null=True, unique=True)
     password_hash = models.CharField(max_length=150, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "users"
